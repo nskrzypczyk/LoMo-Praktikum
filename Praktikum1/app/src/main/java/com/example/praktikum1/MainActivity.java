@@ -9,6 +9,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.Button;
@@ -17,6 +18,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
     Button btnUpdate;
@@ -34,6 +42,13 @@ public class MainActivity extends AppCompatActivity {
         //btnUpdate.setOnClickListener(e -> this.getLocationData());
         tvGPSLong = (TextView) findViewById(R.id.tvGPSLong);
         tvGPSLat = (TextView) findViewById(R.id.tvGPSLat);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}
+                        , 10);
+            }
+        }
+
         locListener = new LocationListener() {
             @Override //wird aufgerufen, wenn es Positionsupdates gibt
             public void onLocationChanged(Location location) {
@@ -43,10 +58,19 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     tvGPSLat.setText(location.getLatitude() + "");
                     tvGPSLong.setText(location.getLongitude() + "");
+                    Date date =new Date(location.getTime());
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.YYYY-hh:mm:ss");
+                    sdf.setTimeZone(TimeZone.getTimeZone("CET"));
+                    String formattedDate= sdf.format(date);
+                    Log.d("time", "onLocationChanged: "+formattedDate);
+
+                    printToCSV(new String[]{formattedDate,location.getLatitude()+"",location.getLongitude()+""});
+
                 } catch (Exception e) {
                     Log.e("OOF", "onLocationChanged: ", e.getCause());
                     tvGPSLat.setText("ERROR");
                     tvGPSLong.setText("ERROR");
+
                 }
             }
 
@@ -68,6 +92,53 @@ public class MainActivity extends AppCompatActivity {
         };
         configureButton();
 
+
+    }
+
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isExternalStorageReadable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state) ||
+                Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+            return true;
+        }
+        return false;
+    }
+
+
+    public void printToCSV(String[] data) throws IOException {
+        {
+
+            File root = Environment.getExternalStorageDirectory();
+            File folder = new File(root.getAbsoluteFile()+"/Ergebnisse");
+
+            boolean var = false;
+            if (!folder.exists())
+                var = folder.mkdirs();
+
+            System.out.println("" + var);
+
+
+            File file = new File(folder,"ergebnis.csv");
+
+            try {
+                FileWriter fw = new FileWriter(file, true);
+                fw.write(data[0]+";"+data[1]+";"+data[2]+"\n");
+
+                fw.flush();
+                fw.close();
+
+            } catch (Exception e) {
+            }
+
+        }
 
     }
 
