@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                     tvGPSLat.setText(location.getLatitude() + "");
                     tvGPSLong.setText(location.getLongitude() + "");
                     Date date =new Date(location.getTime());
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.YYYY-hh:mm:ss");
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.YYYY-HH:mm:ss");
                     sdf.setTimeZone(TimeZone.getTimeZone("CET"));
                     String formattedDate= sdf.format(date);
                     Log.d("time", "onLocationChanged: "+formattedDate);
