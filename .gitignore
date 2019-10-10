@@ -9,6 +9,10 @@
 # Java class files
 *.class
 
+
+# Node modules
+node_modules/
+
 # Generated files
 bin/
 gen/
