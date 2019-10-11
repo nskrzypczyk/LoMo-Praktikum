@@ -2,9 +2,13 @@
  
 Beinhaltet zunächst folgende Felder:
 
-    * lat: Number
-    * long: Number
-    * timeStamp: String
+* lat: Number
+* long: Number
+* timeStamp: String
+
+## Endpoints
+
+* localhost:5000/api/position/send
 
 ## Setup
 
