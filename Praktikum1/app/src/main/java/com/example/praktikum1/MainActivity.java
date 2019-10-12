@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.textclassifier.TextLinks;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -19,12 +20,25 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.TimeZone;
+
+import lombok.var;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
     Button btnUpdate;
@@ -32,10 +46,13 @@ public class MainActivity extends AppCompatActivity {
     LocationManager locManager;
     LocationListener locListener;
     Location locGPS;
+    OkHttpClient client;
+    static final String URL = "http://LOKALE IP HIER!!!:80";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        client = new OkHttpClient();
         setContentView(R.layout.activity_main);
         locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         btnUpdate = findViewById(R.id.btnUpdate);
@@ -48,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
                         , 10);
             }
         }
+
 
         locListener = new LocationListener() {
             @Override //wird aufgerufen, wenn es Positionsupdates gibt
@@ -63,8 +81,10 @@ public class MainActivity extends AppCompatActivity {
                     sdf.setTimeZone(TimeZone.getTimeZone("CET"));
                     String formattedDate= sdf.format(date);
                     Log.d("time", "onLocationChanged: "+formattedDate);
-
-                    printToCSV(new String[]{formattedDate,location.getLatitude()+"",location.getLongitude()+""});
+                    //Positionsobjekt erstellen
+                    Position pos = new Position(formattedDate,location.getLatitude(), location.getLongitude());
+                    printToCSV(pos.toHashMap());
+                    POSTrequest(pos.toHashMap());
 
                 } catch (Exception e) {
                     Log.e("OOF", "onLocationChanged: ", e.getCause());
@@ -113,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void printToCSV(String[] data) throws IOException {
+    public void printToCSV(HashMap<String, String> hashMap) throws IOException {
         {
 
             File root = Environment.getExternalStorageDirectory();
@@ -130,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 FileWriter fw = new FileWriter(file, true);
-                fw.write(data[0]+";"+data[1]+";"+data[2]+"\n");
+                fw.write(hashMap.get("timeStamp")+";"+hashMap.get("latitude")+";"+hashMap.get("longitude")+"\n");
 
                 fw.flush();
                 fw.close();
@@ -153,8 +173,26 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void getLocationData() {
-
+    public void POSTrequest(HashMap<String,String> hashMap){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    MediaType JSON = MediaType.parse("application/json;charset=utf-8");
+                    JSONObject actual = new JSONObject();
+                    try {
+                        actual.put("timeStamp", hashMap.get("timeStamp"));
+                        actual.put("lat", hashMap.get("latitude"));
+                        actual.put("long", hashMap.get("longitude"));
+                    }catch(Exception e){ e.printStackTrace();}
+                        RequestBody body = RequestBody.create(JSON, actual.toString());
+                        Request req = new Request.Builder().url(MainActivity.URL+"/api/position/send").post(body).build();
+                    try {
+                        Response res = client.newCall(req).execute();
+                        System.out.println(res.toString());
+                    }catch(Exception e){e.printStackTrace();}
+                        System.out.println(body);
+                }
+            }).start();
 
     }
 
@@ -168,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
         }
         // this code won't execute IF permissions are not allowed, because in the line above there is return statement.
         btnUpdate.setOnClickListener(e->{
-                locManager.requestLocationUpdates("gps", 5000, 0, locListener);
+                locManager.requestLocationUpdates("gps", 3000, 0, locListener);
         });
     }
 

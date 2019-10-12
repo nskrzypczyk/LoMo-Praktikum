@@ -23,6 +23,6 @@ app.use("/", indexRouter);
 app.use(bodyParser.json());
 app.use("/api/position", pos);
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 80;
 
 app.listen(port, () => console.log(`Server läuft nun auf Port: ${port} !`));

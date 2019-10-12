@@ -31,4 +31,7 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     implementation 'com.google.android.gms:play-services:11.0.0'
+    implementation("com.squareup.okhttp3:okhttp:4.2.1")
+    compileOnly "org.projectlombok:lombok:1.18.10"
+    annotationProcessor 'org.projectlombok:lombok:1.18.10'
 }
