@@ -7,13 +7,14 @@ import java.util.HashMap;
 
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.var;
 
-@Getter @Setter @RequiredArgsConstructor
+@Getter @Setter @RequiredArgsConstructor @NoArgsConstructor
 public class Position {
     @NonNull
     private String timeStamp;
@@ -33,5 +34,6 @@ public class Position {
        hashMap.put("longitude", longitude+"");
        return hashMap;
     }
+
 }
 

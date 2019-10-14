@@ -2,8 +2,12 @@ package com.example.praktikum1;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -12,13 +16,19 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
 import android.view.textclassifier.TextLinks;
 import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.preference.PreferenceManager;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -26,11 +36,13 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.TimeZone;
 
+import lombok.Setter;
 import lombok.var;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -40,25 +52,32 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity {
-    Button btnUpdate;
+public class MainActivity extends AppCompatActivity{
+    Button btnUpdate, btnStop;
     TextView tvGPSLong, tvGPSLat;
     LocationManager locManager;
     LocationListener locListener;
     Location locGPS;
     OkHttpClient client;
-    static final String URL = "http://LOKALE IP HIER!!!:80";
+
+    //Serveradresse aus XML holen
+    public String getURL(){
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        String val = sp.getString("server_address", "http://localhost:80");
+        return val;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        client = new OkHttpClient();
+        client = new OkHttpClient();                                                //http client instanz
         setContentView(R.layout.activity_main);
-        locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);  //locationmanager instanz
         btnUpdate = findViewById(R.id.btnUpdate);
-        //btnUpdate.setOnClickListener(e -> this.getLocationData());
+        btnStop = findViewById(R.id.btnStop);
         tvGPSLong = (TextView) findViewById(R.id.tvGPSLong);
         tvGPSLat = (TextView) findViewById(R.id.tvGPSLat);
+        //berechtigung für schreibzugriff auf externen speichr(SD)
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}
@@ -73,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
                 if(location==null){
                     System.out.println("S.H.I.T.");
                 }
+                Position pos =new Position();
                 try {
                     tvGPSLat.setText(location.getLatitude() + "");
                     tvGPSLong.setText(location.getLongitude() + "");
@@ -82,9 +102,8 @@ public class MainActivity extends AppCompatActivity {
                     String formattedDate= sdf.format(date);
                     Log.d("time", "onLocationChanged: "+formattedDate);
                     //Positionsobjekt erstellen
-                    Position pos = new Position(formattedDate,location.getLatitude(), location.getLongitude());
-                    printToCSV(pos.toHashMap());
-                    POSTrequest(pos.toHashMap());
+                    pos = new Position(formattedDate,location.getLatitude(), location.getLongitude());
+
 
                 } catch (Exception e) {
                     Log.e("OOF", "onLocationChanged: ", e.getCause());
@@ -92,6 +111,25 @@ public class MainActivity extends AppCompatActivity {
                     tvGPSLong.setText("ERROR");
 
                 }
+                try{
+                    printToCSV(pos.toHashMap());
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+                try{
+                    POSTrequest(pos.toHashMap());
+                }catch(Exception e){
+                    e.printStackTrace();
+                    new AlertDialog.Builder(MainActivity.this).setTitle("Ein Fehler ist aufgetreten").setMessage("Der angegebene Server konnte nicht erreicht werden :(")
+                    .setNeutralButton("Serverangabe prüfen", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                            startActivity(intent);
+                        }
+                    }).create().show(); //TODO: Wird noch nicht angezeigt
+                }
+
             }
 
             @Override
@@ -113,6 +151,24 @@ public class MainActivity extends AppCompatActivity {
         configureButton();
 
 
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        MenuInflater inf = getMenuInflater();
+        inf.inflate(R.menu.actionmenu, menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     public boolean isExternalStorageWritable() {
@@ -174,19 +230,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void POSTrequest(HashMap<String,String> hashMap){
+        System.out.println("URL: "+this.getURL());
+        String URL = this.getURL();
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     MediaType JSON = MediaType.parse("application/json;charset=utf-8");
                     JSONObject actual = new JSONObject();
+                    RequestBody body=null;
                     try {
                         actual.put("timeStamp", hashMap.get("timeStamp"));
                         actual.put("lat", hashMap.get("latitude"));
                         actual.put("long", hashMap.get("longitude"));
                     }catch(Exception e){ e.printStackTrace();}
-                        RequestBody body = RequestBody.create(JSON, actual.toString());
-                        Request req = new Request.Builder().url(MainActivity.URL+"/api/position/send").post(body).build();
-                    try {
+                    try{
+                        body= RequestBody.create(JSON, actual.toString());
+                        Request req = new Request.Builder().url(URL+"/api/position/send").post(body).build();
                         Response res = client.newCall(req).execute();
                         System.out.println(res.toString());
                     }catch(Exception e){e.printStackTrace();}
@@ -207,7 +266,15 @@ public class MainActivity extends AppCompatActivity {
         // this code won't execute IF permissions are not allowed, because in the line above there is return statement.
         btnUpdate.setOnClickListener(e->{
                 locManager.requestLocationUpdates("gps", 3000, 0, locListener);
+                btnStop.setVisibility(View.VISIBLE);
+                btnUpdate.setVisibility(View.GONE);
+        });
+        btnStop.setOnClickListener(e->{
+            locManager.removeUpdates(locListener);
+            btnStop.setVisibility(View.GONE);
+            btnUpdate.setVisibility(View.VISIBLE);
         });
     }
+
 
 }
