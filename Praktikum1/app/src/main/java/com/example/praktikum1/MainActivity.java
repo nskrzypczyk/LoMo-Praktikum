@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity{
     TextView tvGPSLong, tvGPSLat, tvGPSAlt;
     LocationManager locManager;
     LocationListener locListener;
+    SensorManager sensorManager;
     Location locGPS;
     OkHttpClient client;
 
