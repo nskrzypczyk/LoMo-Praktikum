@@ -8,4 +8,13 @@
         android:title="Einstellungen"
         android:orderInCategory="100"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/actionMenu_statistics"
+        android:title="Statistiken" />
+    <item
+        android:id="@+id/actionMenu_graphics"
+        android:title="Graphische Darstellung" />
+    <item
+        android:id="@+id/actionMenu_logs"
+        android:title="Logs anzeigen" />
 </menu>

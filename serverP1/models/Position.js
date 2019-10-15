@@ -13,6 +13,10 @@ const PositionSchema = Schema({
   long: {
     type: Number,
     required: true
+  },
+  alt: {
+    type: Number,
+    required: true
   }
 });
 

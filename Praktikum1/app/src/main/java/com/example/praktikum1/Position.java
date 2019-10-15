@@ -20,6 +20,7 @@ public class Position {
     private String timeStamp;
     @NonNull private double latitude;
     @NonNull private double longitude;
+    @NonNull private double altitude;
 
     public void toStringArrayList(){
         ArrayList<String> representation = new ArrayList<>();

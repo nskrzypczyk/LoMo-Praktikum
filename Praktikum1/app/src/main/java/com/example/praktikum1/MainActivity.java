@@ -6,8 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
-import android.content.res.XmlResourceParser;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -20,7 +18,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.textclassifier.TextLinks;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -30,22 +27,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.TimeZone;
 
-import lombok.Setter;
-import lombok.var;
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -54,7 +45,7 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity{
     Button btnUpdate, btnStop;
-    TextView tvGPSLong, tvGPSLat;
+    TextView tvGPSLong, tvGPSLat, tvGPSAlt;
     LocationManager locManager;
     LocationListener locListener;
     Location locGPS;
@@ -77,6 +68,7 @@ public class MainActivity extends AppCompatActivity{
         btnStop = findViewById(R.id.btnStop);
         tvGPSLong = (TextView) findViewById(R.id.tvGPSLong);
         tvGPSLat = (TextView) findViewById(R.id.tvGPSLat);
+        tvGPSAlt = findViewById(R.id.tvGPSAlt);
         //berechtigung für schreibzugriff auf externen speichr(SD)
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -96,13 +88,14 @@ public class MainActivity extends AppCompatActivity{
                 try {
                     tvGPSLat.setText(location.getLatitude() + "");
                     tvGPSLong.setText(location.getLongitude() + "");
+                    tvGPSAlt.setText(location.getAltitude()+"");
                     Date date =new Date(location.getTime());
                     SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.YYYY-HH:mm:ss");
                     sdf.setTimeZone(TimeZone.getTimeZone("CET"));
                     String formattedDate= sdf.format(date);
                     Log.d("time", "onLocationChanged: "+formattedDate);
                     //Positionsobjekt erstellen
-                    pos = new Position(formattedDate,location.getLatitude(), location.getLongitude());
+                    pos = new Position(formattedDate,location.getLatitude(), location.getLongitude(), location.getAltitude());
 
 
                 } catch (Exception e) {
@@ -112,12 +105,12 @@ public class MainActivity extends AppCompatActivity{
 
                 }
                 try{
-                    printToCSV(pos.toHashMap());
+                    printToCSV(pos);
                 }catch(Exception e){
                     e.printStackTrace();
                 }
                 try{
-                    POSTrequest(pos.toHashMap());
+                    POSTrequest(pos);
                 }catch(Exception e){
                     e.printStackTrace();
                     new AlertDialog.Builder(MainActivity.this).setTitle("Ein Fehler ist aufgetreten").setMessage("Der angegebene Server konnte nicht erreicht werden :(")
@@ -189,7 +182,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-    public void printToCSV(HashMap<String, String> hashMap) throws IOException {
+    public void printToCSV(Position pos) throws IOException {
         {
 
             File root = Environment.getExternalStorageDirectory();
@@ -206,7 +199,7 @@ public class MainActivity extends AppCompatActivity{
 
             try {
                 FileWriter fw = new FileWriter(file, true);
-                fw.write(hashMap.get("timeStamp")+";"+hashMap.get("latitude")+";"+hashMap.get("longitude")+"\n");
+                fw.write(pos.getTimeStamp()+";"+pos.getLatitude()+";"+pos.getLongitude()+";"+pos.getAltitude()+"\n");
 
                 fw.flush();
                 fw.close();
@@ -229,7 +222,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    public void POSTrequest(HashMap<String,String> hashMap){
+    public void POSTrequest(Position pos){
         System.out.println("URL: "+this.getURL());
         String URL = this.getURL();
             new Thread(new Runnable() {
@@ -239,9 +232,10 @@ public class MainActivity extends AppCompatActivity{
                     JSONObject actual = new JSONObject();
                     RequestBody body=null;
                     try {
-                        actual.put("timeStamp", hashMap.get("timeStamp"));
-                        actual.put("lat", hashMap.get("latitude"));
-                        actual.put("long", hashMap.get("longitude"));
+                        actual.put("timeStamp", pos.getTimeStamp());
+                        actual.put("lat", pos.getLatitude());
+                        actual.put("long", pos.getLongitude());
+                        actual.put("alt", pos.getAltitude());
                     }catch(Exception e){ e.printStackTrace();}
                     try{
                         body= RequestBody.create(JSON, actual.toString());
