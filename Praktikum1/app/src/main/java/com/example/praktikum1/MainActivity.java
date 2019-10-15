@@ -202,29 +202,26 @@ public class MainActivity extends AppCompatActivity{
 
     public void printToCSV(Position position) {
 
-        final String OUTPUT_DIR = Environment.getExternalStorageDirectory().getAbsoluteFile() + File.separator + "LoMoPraktikum";
-        final String OUTPUT_FILE_PATH = OUTPUT_DIR + File.separator + "gps-daten.csv";
-
         // ggf. Ausgabeverzeichnis erstellen, damit
         // im Anschluss problemlos geschrieben werden kann.
-        File folder = new File(OUTPUT_DIR);
+        File folder = new File(Constants.OUTPUT_DIR);
         if (!folder.exists()) {
             folder.mkdirs();
         }
 
-        File file = new File(OUTPUT_FILE_PATH);
+        File file = new File(Constants.GPS_OUTPUT_FILE_PATH);
 
         try {
             // Sollte die Datei nicht existieren
             // -> Kopf der Tabelle schreiben
             if(!file.exists()) {
-                ICSVWriter writer = new CSVWriterBuilder(new FileWriter(OUTPUT_FILE_PATH)).withSeparator(';').build();
+                ICSVWriter writer = new CSVWriterBuilder(new FileWriter(Constants.GPS_OUTPUT_FILE_PATH)).withSeparator(';').build();
                 writer.writeNext(new String[] {"timeStamp", "latitude", "longitude", "altitude"});
                 writer.close();
             }
 
             // Daten des Positionsobjekts schreiben
-            ICSVWriter writer = new CSVWriterBuilder(new FileWriter(OUTPUT_FILE_PATH, true)).withSeparator(';').build();
+            ICSVWriter writer = new CSVWriterBuilder(new FileWriter(Constants.GPS_OUTPUT_FILE_PATH, true)).withSeparator(';').build();
             writer.writeNext(position.toStringArray());
             writer.close();
 
