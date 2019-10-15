@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const PositionSchema = Schema({
+const SensorData = Schema({
   timeStamp: {
     type: String,
     required: true
@@ -17,7 +17,19 @@ const PositionSchema = Schema({
   alt: {
     type: Number,
     required: true
+  },
+  accX: {
+    type: Number,
+    required: true
+  },
+  accY: {
+    type: Number,
+    required: true
+  },
+  accZ: {
+    type: Number,
+    required: true
   }
 });
 
-module.exports = mongoose.model("position", PositionSchema);
+module.exports = mongoose.model("position", SensorData);

@@ -6,6 +6,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -44,14 +47,17 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
     Button btnUpdate, btnStop;
-    TextView tvGPSLong, tvGPSLat, tvGPSAlt;
+    TextView tvGPSLong, tvGPSLat, tvGPSAlt, tvAcc;
     LocationManager locManager;
     LocationListener locListener;
     SensorManager sensorManager;
+    Sensor accelerometer;
     Location locGPS;
     OkHttpClient client;
+    Position position;
+    Sensordaten sensordaten = new Sensordaten();
 
     //Serveradresse aus XML holen
     public String getURL(){
@@ -66,11 +72,14 @@ public class MainActivity extends AppCompatActivity{
         client = new OkHttpClient();                                                //http client instanz
         setContentView(R.layout.activity_main);
         locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);  //locationmanager instanz
+        sensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
+
         btnUpdate = findViewById(R.id.btnUpdate);
         btnStop = findViewById(R.id.btnStop);
         tvGPSLong = (TextView) findViewById(R.id.tvGPSLong);
         tvGPSLat = (TextView) findViewById(R.id.tvGPSLat);
         tvGPSAlt = findViewById(R.id.tvGPSAlt);
+        tvAcc = findViewById(R.id.tvAcc);
         //berechtigung für schreibzugriff auf externen speichr(SD)
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -84,7 +93,7 @@ public class MainActivity extends AppCompatActivity{
             @Override //wird aufgerufen, wenn es Positionsupdates gibt
             public void onLocationChanged(Location location) {
                 if(location==null){
-                    System.out.println("S.H.I.T.");
+                    System.out.println("Keine Daten");
                 }
                 Position pos =new Position();
                 try {
@@ -97,7 +106,7 @@ public class MainActivity extends AppCompatActivity{
                     String formattedDate= sdf.format(date);
                     Log.d("time", "onLocationChanged: "+formattedDate);
                     //Positionsobjekt erstellen
-                    pos = new Position(formattedDate,location.getLatitude(), location.getLongitude(), location.getAltitude());
+                    position = new Position(formattedDate,location.getLatitude(), location.getLongitude(), location.getAltitude());
 
 
                 } catch (Exception e) {
@@ -107,12 +116,12 @@ public class MainActivity extends AppCompatActivity{
 
                 }
                 try{
-                    printToCSV(pos);
+                    printToCSV();
                 }catch(Exception e){
                     e.printStackTrace();
                 }
                 try{
-                    POSTrequest(pos);
+                    POSTrequest();
                 }catch(Exception e){
                     e.printStackTrace();
                     new AlertDialog.Builder(MainActivity.this).setTitle("Ein Fehler ist aufgetreten").setMessage("Der angegebene Server konnte nicht erreicht werden :(")
@@ -184,7 +193,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-    public void printToCSV(Position pos) throws IOException {
+    public void printToCSV() throws IOException {
         {
 
             File root = Environment.getExternalStorageDirectory();
@@ -201,7 +210,7 @@ public class MainActivity extends AppCompatActivity{
 
             try {
                 FileWriter fw = new FileWriter(file, true);
-                fw.write(pos.getTimeStamp()+";"+pos.getLatitude()+";"+pos.getLongitude()+";"+pos.getAltitude()+"\n");
+                fw.write(position.getTimeStamp()+";"+position.getLatitude()+";"+position.getLongitude()+";"+position.getAltitude()+"\n");
 
                 fw.flush();
                 fw.close();
@@ -224,7 +233,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    public void POSTrequest(Position pos){
+    public void POSTrequest(){
         System.out.println("URL: "+this.getURL());
         String URL = this.getURL();
             new Thread(new Runnable() {
@@ -234,10 +243,13 @@ public class MainActivity extends AppCompatActivity{
                     JSONObject actual = new JSONObject();
                     RequestBody body=null;
                     try {
-                        actual.put("timeStamp", pos.getTimeStamp());
-                        actual.put("lat", pos.getLatitude());
-                        actual.put("long", pos.getLongitude());
-                        actual.put("alt", pos.getAltitude());
+                        actual.put("timeStamp", position.getTimeStamp());
+                        actual.put("lat", position.getLatitude());
+                        actual.put("long", position.getLongitude());
+                        actual.put("alt", position.getAltitude());
+                        actual.put("accX",sensordaten.getAccX());
+                        actual.put("accY",sensordaten.getAccY());
+                        actual.put("accZ",sensordaten.getAccZ());
                     }catch(Exception e){ e.printStackTrace();}
                     try{
                         body= RequestBody.create(JSON, actual.toString());
@@ -251,6 +263,7 @@ public class MainActivity extends AppCompatActivity{
 
     }
 
+    //WIRD VOM LOCATIONLISTENER AUFGERUFEN
     private void configureButton() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -259,18 +272,46 @@ public class MainActivity extends AppCompatActivity{
             }
             return;
         }
-        // this code won't execute IF permissions are not allowed, because in the line above there is return statement.
         btnUpdate.setOnClickListener(e->{
                 locManager.requestLocationUpdates("gps", 3000, 0, locListener);
                 btnStop.setVisibility(View.VISIBLE);
                 btnUpdate.setVisibility(View.GONE);
+                accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+                onResume();
         });
+
         btnStop.setOnClickListener(e->{
             locManager.removeUpdates(locListener);
             btnStop.setVisibility(View.GONE);
             btnUpdate.setVisibility(View.VISIBLE);
+            onPause();
         });
     }
 
 
+    //SENSORMANAGER / SENSOREVENTLISTENER METHODEN
+    protected void onResume(){
+        super.onResume();
+        sensorManager.registerListener(this, accelerometer,SensorManager.SENSOR_DELAY_NORMAL);
+    }
+    protected void onPause(){
+        super.onPause();
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        switch(event.sensor.getType()){
+            case Sensor.TYPE_ACCELEROMETER:
+                tvAcc.setText("X: "+ event.values[0]+"\nY: "+ event.values[1]+"\nZ: "+event.values[2]);
+                this.sensordaten.setAccX(event.values[0]);
+                this.sensordaten.setAccY(event.values[1]);
+                this.sensordaten.setAccZ(event.values[2]);
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
 }
