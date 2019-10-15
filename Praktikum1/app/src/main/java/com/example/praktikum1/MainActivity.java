@@ -40,7 +40,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.TimeZone;
-
+import com.opencsv.CSVParser;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.CSVWriter;
+import com.opencsv.CSVWriterBuilder;
+import com.opencsv.ICSVWriter;
+import com.opencsv.bean.StatefulBeanToCsv;
+import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -194,32 +200,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
     public void printToCSV() throws IOException {
-        {
+        final String OUTPUT_DIR = Environment.getExternalStorageDirectory().getAbsoluteFile() + File.separator + "LoMoPraktikum";
+        final String OUTPUT_FILE_PATH = OUTPUT_DIR + File.separator + "gps-daten.csv";
 
-            File root = Environment.getExternalStorageDirectory();
-            File folder = new File(root.getAbsoluteFile()+"/Ergebnisse");
-
-            boolean var = false;
-            if (!folder.exists())
-                var = folder.mkdirs();
-
-            System.out.println("" + var);
-
-
-            File file = new File(folder,"ergebnis.csv");
-
-            try {
-                FileWriter fw = new FileWriter(file, true);
-                fw.write(position.getTimeStamp()+";"+position.getLatitude()+";"+position.getLongitude()+";"+position.getAltitude()+"\n");
-
-                fw.flush();
-                fw.close();
-
-            } catch (Exception e) {
-            }
-
+        // ggf. Ausgabeverzeichnis erstellen, damit
+        // im Anschluss problemlos geschrieben werden kann.
+        File folder = new File(OUTPUT_DIR);
+        if (!folder.exists()) {
+            folder.mkdirs();
         }
 
+        File file = new File(OUTPUT_FILE_PATH);
+
+        try {
+            // Sollte die Datei nicht existieren
+            // -> Kopf der Tabelle schreiben
+            if(!file.exists()) {
+                ICSVWriter writer = new CSVWriterBuilder(new FileWriter(OUTPUT_FILE_PATH)).withSeparator(';').build();
+                writer.writeNext(new String[] {"timeStamp", "latitude", "longitude", "altitude"});
+                writer.close();
+            }
+
+            // Daten des Positionsobjekts schreiben
+            ICSVWriter writer = new CSVWriterBuilder(new FileWriter(OUTPUT_FILE_PATH, true)).withSeparator(';').build();
+            writer.writeNext(position.toStringArray());
+            writer.close();
+
+        } catch (Exception e) {}
     }
 
     @Override

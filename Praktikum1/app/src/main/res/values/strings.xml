@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Praktikum1</string>
     <string name="title_activity_settings">Einstellungen</string>
+    <string name="title_activity_logs">Logs</string>
 
     <!-- Preference Titles -->
     <string name="messages_header">Halo, I bims, 1 App Einstellung</string>
