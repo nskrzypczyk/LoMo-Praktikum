@@ -98,7 +98,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="right|center_horizontal"
                 android:text="Hier könnte Ihre Werbung stehen!"
-                android:textAlignment="gravity"
+                android:textAlignment="textEnd"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
         </LinearLayout>
