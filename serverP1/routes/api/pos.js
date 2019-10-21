@@ -11,7 +11,8 @@ router.post("/send", (req, res) => {
     alt: req.body.alt,
     accX: req.body.accX,
     accY: req.body.accY,
-    accZ: req.body.accZ
+    accZ: req.body.accZ,
+    prox: req.body.prox
   });
   newPos
     .save()

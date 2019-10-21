@@ -55,11 +55,12 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     Button btnUpdate, btnStop;
-    TextView tvGPSLong, tvGPSLat, tvGPSAlt, tvAcc;
+    TextView tvGPSLong, tvGPSLat, tvGPSAlt, tvAcc,tvProx;
     LocationManager locManager;
     LocationListener locListener;
     SensorManager sensorManager;
     Sensor accelerometer;
+    Sensor proximity;
     Location locGPS;
     OkHttpClient client;
     Position position;
@@ -86,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         tvGPSLat = (TextView) findViewById(R.id.tvGPSLat);
         tvGPSAlt = findViewById(R.id.tvGPSAlt);
         tvAcc = findViewById(R.id.tvAcc);
+        tvProx = findViewById(R.id.tvProx);
         // berechtigung für schreibzugriff auf externen speichr(SD)
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -266,6 +268,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     actual.put("accX", sensordaten.getAccX());
                     actual.put("accY", sensordaten.getAccY());
                     actual.put("accZ", sensordaten.getAccZ());
+                    actual.put("prox",sensordaten.getProx());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -298,6 +301,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             btnStop.setVisibility(View.VISIBLE);
             btnUpdate.setVisibility(View.GONE);
             accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+            proximity = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
             onResume();
         });
 
@@ -305,6 +309,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             locManager.removeUpdates(locListener);
             btnStop.setVisibility(View.GONE);
             btnUpdate.setVisibility(View.VISIBLE);
+
             onPause();
         });
     }
@@ -313,6 +318,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onResume() {
         super.onResume();
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this,proximity, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     protected void onPause() {
@@ -328,6 +334,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.sensordaten.setAccX(event.values[0]);
             this.sensordaten.setAccY(event.values[1]);
             this.sensordaten.setAccZ(event.values[2]);
+            break;
+        case Sensor.TYPE_PROXIMITY:
+            tvProx.setText(event.values[0] +"cm");
+            this.sensordaten.setProx(event.values[0]);
+            break;
         }
     }
 

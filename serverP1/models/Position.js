@@ -29,6 +29,10 @@ const SensorData = Schema({
   accZ: {
     type: Number,
     required: true
+  },
+  prox: {
+    type: Number,
+    required: true
   }
 });
 

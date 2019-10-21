@@ -9,5 +9,5 @@ import lombok.Singular;
 
 @Getter @Setter @RequiredArgsConstructor @NoArgsConstructor
 public class Sensordaten {
-    @NonNull private double accX,accY,accZ;
+    @NonNull private double accX,accY,accZ,prox;
 }
