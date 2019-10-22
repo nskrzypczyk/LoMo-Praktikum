@@ -12,7 +12,10 @@ router.post("/send", (req, res) => {
     accX: req.body.accX,
     accY: req.body.accY,
     accZ: req.body.accZ,
-    prox: req.body.prox
+    prox: req.body.prox,
+    axisX: req.body.axisX,
+    axisY: req.body.axisY,
+    axisZ: req.body.axisZ
   });
   newPos
     .save()

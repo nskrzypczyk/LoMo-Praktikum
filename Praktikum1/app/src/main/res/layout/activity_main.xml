@@ -119,6 +119,24 @@
                 android:textAlignment="textEnd"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
+            <TextView
+                android:id="@+id/textView7"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Orientierung"
+                android:textAllCaps="true"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvAxis"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right|center_horizontal"
+                android:text="Hier könnte Ihre Werbung stehen!"
+                android:textAlignment="textEnd"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+
         </LinearLayout>
     </ScrollView>
 

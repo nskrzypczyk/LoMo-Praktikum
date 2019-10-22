@@ -55,12 +55,13 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     Button btnUpdate, btnStop;
-    TextView tvGPSLong, tvGPSLat, tvGPSAlt, tvAcc,tvProx;
+    TextView tvGPSLong, tvGPSLat, tvGPSAlt, tvAcc,tvProx, tvAxis;
     LocationManager locManager;
     LocationListener locListener;
     SensorManager sensorManager;
     Sensor accelerometer;
     Sensor proximity;
+    Sensor orientation;
     Location locGPS;
     OkHttpClient client;
     Position position;
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         tvGPSAlt = findViewById(R.id.tvGPSAlt);
         tvAcc = findViewById(R.id.tvAcc);
         tvProx = findViewById(R.id.tvProx);
+        tvAxis = findViewById(R.id.tvAxis);
         // berechtigung für schreibzugriff auf externen speichr(SD)
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -269,6 +271,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     actual.put("accY", sensordaten.getAccY());
                     actual.put("accZ", sensordaten.getAccZ());
                     actual.put("prox",sensordaten.getProx());
+                    actual.put("axisX", sensordaten.getAxisX());
+                    actual.put("axisY", sensordaten.getAxisY());
+                    actual.put("axisZ", sensordaten.getAxisZ());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -302,6 +307,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             btnUpdate.setVisibility(View.GONE);
             accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             proximity = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+            orientation = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
             onResume();
         });
 
@@ -319,6 +325,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onResume();
         sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this,proximity, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this,orientation, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     protected void onPause() {
@@ -339,7 +346,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             tvProx.setText(event.values[0] +"cm");
             this.sensordaten.setProx(event.values[0]);
             break;
+        case Sensor.TYPE_ORIENTATION:
+            tvAxis.setText("X: "+ event.values[1]+"\nY:" + event.values[2]+"\nZ: "+ event.values[0]);
+            this.sensordaten.setAxisX(event.values[1]);
+            this.sensordaten.setAxisY(event.values[2]);
+            this.sensordaten.setAxisZ(event.values[0]);
+            break;
         }
+
     }
 
     @Override
