@@ -33,6 +33,18 @@ const SensorData = Schema({
   prox: {
     type: Number,
     required: true
+  },
+  axisX: {
+    type: Number,
+    required: true
+  },
+  axisY: {
+    type: Number,
+    required: true
+  },
+  axisZ: {
+    type: Number,
+    required: true
   }
 });
 
