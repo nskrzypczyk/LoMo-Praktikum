@@ -27,4 +27,15 @@ router.post("/send", (req, res) => {
     });
 });
 
+router.get("/all", (req, res) => {
+  SensorData.find({})
+    .sort("-timeStamp")
+    .then(arr => {
+      res.send(arr);
+    })
+    .catch(err => {
+      res.status(500).send({ error: err.message });
+    });
+});
+
 module.exports = router;

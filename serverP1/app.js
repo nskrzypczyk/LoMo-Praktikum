@@ -4,6 +4,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const pos = require("./routes/api/pos");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 app.use(
   bodyParser.urlencoded({
@@ -11,7 +12,7 @@ app.use(
   })
 );
 app.use(bodyParser.json());
-
+app.use(cors());
 //Mit MongoDB verbinden
 const db = require("./config/keys").mongoURI;
 mongoose

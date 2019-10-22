@@ -1,17 +1,69 @@
 import React from "react";
+import axios from "axios";
+import ReactTable from "react-table";
+
 export default class Content extends React.Component {
   constructor(props) {
-    super.props();
+    super(props);
     this.state = {
-      data: []
+      pos: []
     };
   }
-  getData() {
+  componentDidMount() {
     axios
-      .get("http://localhost:80/api/position/getall")
-      .then(response => console.log(response));
+      .get("http://localhost:80/api/position/all")
+      .then(response => {
+        console.log("DATA: ", response.data);
+        this.setState({
+          pos: response.data
+        });
+      })
+      .catch(err => console.log(err));
   }
+
   render() {
-    return <div className="Content">Hello, {this.props.name}</div>;
+    return (
+      <div className="Content">
+        {this.state.pos.map(item => (
+          <li>
+            <div className="timeStamp">
+              <span>Zeitpunkt:</span> {item.timeStamp}
+            </div>
+            <div>
+              <span>Longitude: </span> {item.long}
+            </div>
+            <div>
+              <span>Latitude:</span> {item.lat}
+            </div>
+            <div>
+              <span>Altitude:</span> {item.alt}
+            </div>
+            <div>
+              <span>Acceleration X:</span> {item.accX}
+            </div>
+            <div>
+              <span>Acceleration Y:</span> {item.accY}
+            </div>
+            <div>
+              <span>Acceleration Z:</span> {item.accZ}
+            </div>
+            <div>
+              <span>Proximity [cm]:</span> {item.prox}
+            </div>
+            <div>
+              <span>Rotation X:</span> {item.axisX}
+            </div>
+            <div>
+              <span>Rotation Y:</span> {item.axisY}
+            </div>
+            <div>
+              <span>Rotation Z (Azimuth):</span>
+              {item.axisZ}
+            </div>
+            <hr />
+          </li>
+        ))}
+      </div>
+    );
   }
 }
