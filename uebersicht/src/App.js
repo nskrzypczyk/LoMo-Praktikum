@@ -7,7 +7,8 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">Die LOKALISATOREN</header>
-      <h1 className="Content">Gespeicherte Daten</h1>
+      <h1 className="h">Gespeicherte Daten</h1>
+      <hr />
       <Content />
     </div>
   );

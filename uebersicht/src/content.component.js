@@ -23,12 +23,13 @@ export default class Content extends React.Component {
 
   render() {
     return (
-      <div className="Content">
+      <div className="grid">
         {this.state.pos.map(item => (
-          <li>
+          <article>
             <div className="timeStamp">
-              <span>Zeitpunkt:</span> {item.timeStamp}
+              <span className="timeStamp">Zeitpunkt:</span> {item.timeStamp}
             </div>
+            <hr />
             <div>
               <span>Longitude: </span> {item.long}
             </div>
@@ -57,11 +58,11 @@ export default class Content extends React.Component {
               <span>Rotation Y:</span> {item.axisY}
             </div>
             <div>
-              <span>Rotation Z (Azimuth):</span>
+              <span>Rotation Z (Azimuth): </span>
               {item.axisZ}
             </div>
-            <hr />
-          </li>
+           
+          </article>
         ))}
       </div>
     );
