@@ -40,6 +40,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.TimeZone;
+
+import com.example.praktikum1.graph.AccGraphController;
+import com.jjoe64.graphview.GraphView;
 import com.opencsv.CSVParser;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.CSVWriter;
@@ -67,6 +70,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     Position position;
     Sensordaten sensordaten = new Sensordaten();
 
+    // GraphView
+    GraphView accGraph;
+    AccGraphController accGraphController;
+
     // Serveradresse aus XML holen
     public String getURL() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
@@ -90,6 +97,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         tvAcc = findViewById(R.id.tvAcc);
         tvProx = findViewById(R.id.tvProx);
         tvAxis = findViewById(R.id.tvAxis);
+
+        accGraph = findViewById(R.id.accGraph);
+        accGraphController = new AccGraphController(accGraph);
+
         // berechtigung für schreibzugriff auf externen speichr(SD)
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -341,6 +352,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             this.sensordaten.setAccX(event.values[0]);
             this.sensordaten.setAccY(event.values[1]);
             this.sensordaten.setAccZ(event.values[2]);
+            accGraphController.appendToGraph(event.values);
             break;
         case Sensor.TYPE_PROXIMITY:
             tvProx.setText(event.values[0] +"cm");

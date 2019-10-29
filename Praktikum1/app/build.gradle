@@ -37,5 +37,6 @@ dependencies {
     compileOnly "org.projectlombok:lombok:1.18.10"
     annotationProcessor 'org.projectlombok:lombok:1.18.10'
     implementation 'com.opencsv:opencsv:4.6'
+    implementation 'com.jjoe64:graphview:4.2.1'
 
 }
