@@ -50,6 +50,8 @@ import com.opencsv.CSVWriterBuilder;
 import com.opencsv.ICSVWriter;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
+
+import lombok.Getter;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -66,10 +68,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     Sensor proximity;
     Sensor orientation;
     Location locGPS;
+    @Getter
     OkHttpClient client;
     Position position;
     Sensordaten sensordaten = new Sensordaten();
-
+    @Getter
+    public static MainActivity instance;
     // GraphView
     GraphView accGraph;
     AccGraphController accGraphController;
@@ -84,6 +88,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        instance=this;
         client = new OkHttpClient(); // http client instanz
         setContentView(R.layout.activity_main);
         locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE); // locationmanager instanz
