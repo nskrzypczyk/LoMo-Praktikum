@@ -198,6 +198,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 intent = new Intent(MainActivity.this, LogsActivity.class);
                 startActivity(intent);
                 return true;
+            case R.id.actionMenu_graphics:
+                intent = new Intent(MainActivity.this, MapsActivity.class);
+                startActivity(intent);
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
