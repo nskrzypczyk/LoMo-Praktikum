@@ -3,7 +3,7 @@
   src: url("Purista_Medium.otf") format("opentype");
 }
 
-*{
+* {
   font-family: Purista;
 }
 
@@ -18,30 +18,31 @@
   color: white;
   font-family: Purista;
 }
- .h{
-   font-family: Purista;
-   text-align: center;
- }
+.h {
+  font-family: Purista;
+  text-align: center;
+}
 
 .timeStamp {
   font-weight: bold;
   font-size: 15pt;
 }
 
-
-.grid { 
+.grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   grid-gap: 20px;
   align-items: stretch;
-  }
+  padding-left: 10px;
+  padding-right: 10px;
+}
 .grid > article {
   border: 1px solid #ccc;
-  box-shadow: 2px 2px 6px 0px  rgba(0,0,0,0.3);
-  padding:10px;
+  box-shadow: 2px 2px 6px 0px rgba(0, 0, 0, 0.3);
+  padding: 10px;
   width: 90%;
 }
-article > div{
+article > div {
   padding-bottom: 10px;
 }
 article > div > span {
