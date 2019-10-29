@@ -3,6 +3,7 @@ package com.example.praktikum1.graph;
 import android.graphics.Color;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.LegendRenderer;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
@@ -15,6 +16,11 @@ public class AccGraphController {
 
     public AccGraphController(GraphView graph) {
         this.graph = graph;
+
+        graph.getGridLabelRenderer().setHorizontalLabelsVisible(false);
+
+        graph.getLegendRenderer().setVisible(true);
+        graph.getLegendRenderer().setAlign(LegendRenderer.LegendAlign.TOP);
 
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
