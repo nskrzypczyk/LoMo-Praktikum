@@ -61,12 +61,16 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     Button btnUpdate, btnStop;
     TextView tvGPSLong, tvGPSLat, tvGPSAlt, tvAcc,tvProx, tvAxis;
-    LocationManager locManager;
     LocationListener locListener;
     SensorManager sensorManager;
-    Sensor accelerometer;
-    Sensor proximity;
-    Sensor orientation;
+
+    // Implementierte Sensoren/Services
+    LocationManager locManager; // --> NUR GPS (siehe configureButton()
+    Sensor accelerometer;       // --> Beschleunigung (misst die kräfte, die auf den sensor wirken[siehe android reference seite]
+    Sensor proximity;           // --> in meinem Fall nur binaer, also kleinste/groesste entfernung
+    Sensor orientation;         // --> Werte in °, positiv in mathematisch negativer richtung...oder so
+
+
     Location locGPS;
     @Getter
     OkHttpClient client;
@@ -78,11 +82,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     GraphView accGraph;
     AccGraphController accGraphController;
 
-    // Serveradresse aus XML holen
+    // Serveradresse aus der Settings XML holen
     public String getURL() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         String val = sp.getString("server_address", "http://localhost:80");
         return val;
+    }
+
+    //Sensor Delay aus der Settings XML holen
+    public int getSensorDelay(){
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        String val = sp.getString("sensor_delay", "SENSOR_DELAY_NORMAL");
+        switch(val){
+            case "SENSOR_DELAY_NORMAL":
+                return SensorManager.SENSOR_DELAY_NORMAL;
+            case "SENSOR_DELAY_UI":
+                return SensorManager.SENSOR_DELAY_UI;
+            case "SENSOR_DELAY_GAME":
+                return SensorManager.SENSOR_DELAY_GAME;
+            case "SENSOR_DELAY_FASTEST":
+                return SensorManager.SENSOR_DELAY_FASTEST;
+            default:
+                return SensorManager.SENSOR_DELAY_NORMAL;
+        }
     }
 
     @Override
@@ -343,9 +365,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // SENSORMANAGER / SENSOREVENTLISTENER METHODEN
     protected void onResume() {
         super.onResume();
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(this,proximity, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(this,orientation, SensorManager.SENSOR_DELAY_NORMAL);
+        int delay = this.getSensorDelay();
+        sensorManager.registerListener(this, accelerometer, delay);
+        sensorManager.registerListener(this,proximity, delay);
+        sensorManager.registerListener(this,orientation, delay);
     }
 
     protected void onPause() {

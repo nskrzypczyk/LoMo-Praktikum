@@ -25,5 +25,11 @@
             app:useSimpleSummaryProvider="true" />
 
     </PreferenceCategory>
+    <ListPreference
+        android:defaultValue="SENSOR_DELAY_NORMAL"
+        android:entries="@array/sensor_delay"
+        android:entryValues="@array/sensor_delay"
+        android:key="sensor_delay"
+        android:title="Sensor Delay" />
 
 </PreferenceScreen>

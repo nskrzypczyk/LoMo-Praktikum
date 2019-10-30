@@ -9,4 +9,10 @@
         <item>reply</item>
         <item>reply_all</item>
     </string-array>
+    <string-array name="sensor_delay">
+        <item>SENSOR_DELAY_FASTEST</item>
+        <item>SENSOR_DELAY_GAME</item>
+        <item>SENSOR_DELAY_UI</item>
+        <item>SENSOR_DELAY_NORMAL</item>
+    </string-array>
 </resources>
