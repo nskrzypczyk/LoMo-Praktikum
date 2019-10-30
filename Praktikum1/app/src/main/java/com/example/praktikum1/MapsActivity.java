@@ -10,10 +10,13 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.opencsv.CSVReader;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -35,7 +38,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
     }
 
-    public void getData(){
+    public void getDataFromGET(){
         String URL = MainActivity.getInstance().getURL()+"/api/position/all";
         new Thread(new Runnable() {
             @Override
@@ -43,24 +46,49 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 try{
                     Request req = new Request.Builder().url(URL).get().build();
                     Response res = MainActivity.getInstance().getClient().newCall(req).execute();
-                    //System.out.println(res.body().toString());
                     data = new JSONArray(res.body().string().toString());
 
                 }catch(Exception e){
                     e.printStackTrace();
                 }
-
-                /*try {
-                    System.out.println("");
-                    LatLng pos = new LatLng(lat,longi);
-                    mMap.addMarker(new MarkerOptions().position(pos).title(stamp));
-
-                    }
-                catch(Exception e){
-                    e.printStackTrace();
-                }*/
             }
         }).start();
+    }
+
+    public void  getDataFromCSV(){
+        try {
+            CSVReader reader = new CSVReader(new FileReader(Constants.GPS_OUTPUT_FILE_PATH));
+            String[] nextLine;
+
+            while ((nextLine = reader.readNext()) != null) {
+                // nextLine[] is an array of values from the line
+                //System.out.println(nextLine[0] + nextLine[1] + "etc...");
+                String[] fields = nextLine[0].split(";");
+                for(int i=0;i<fields.length;i++) {
+
+                    fields[i]=fields[i].replaceAll("\"","");
+                    fields[i]=fields[i].replaceAll(",",".");
+                    System.out.println(fields[i]);
+                }
+                for(int i=0;i<fields.length;i++) {
+                    try {
+                        String longitude = fields[2];
+                        String latitude = fields[1];
+                        //System.out.println(latitude);
+                        double longi = Double.parseDouble(longitude);
+                        double lat = Double.parseDouble(latitude);
+                        String stamp = fields[0];
+                        LatLng pos = new LatLng(lat, longi);
+                        mMap.addMarker(new MarkerOptions().position(pos).title(stamp));
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+            reader.close();
+        } catch (IOException e) {
+
+        }
     }
 
 
@@ -70,7 +98,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         try {
-            this.getData();
+            this.getDataFromGET();
             Thread.sleep(5000);
             for(int i=0;i<data.length();i++){
                 System.out.println(data.getJSONObject(i).get("long").toString());
@@ -82,6 +110,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         } catch (Exception e) {
             e.printStackTrace();
+            getDataFromCSV();
         }
 
 
