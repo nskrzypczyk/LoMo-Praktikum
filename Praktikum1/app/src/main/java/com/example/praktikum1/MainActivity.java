@@ -366,9 +366,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onResume() {
         super.onResume();
         int delay = this.getSensorDelay();
-        sensorManager.registerListener(this, accelerometer, delay);
-        sensorManager.registerListener(this,proximity, delay);
-        sensorManager.registerListener(this,orientation, delay);
+        /*
+           Einfacher aber effektiver Ansatz, um zu verhindern, dass zB der beschl. Sensor weiter misst,
+           wenn man aus der Settings Activity zurück zur Main wechselt :D
+         */
+        if(btnUpdate.getVisibility() != View.VISIBLE) {
+            sensorManager.registerListener(this, accelerometer, delay);
+            sensorManager.registerListener(this, proximity, delay);
+            sensorManager.registerListener(this, orientation, delay);
+        }
     }
 
     protected void onPause() {
