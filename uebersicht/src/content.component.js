@@ -1,6 +1,6 @@
 import React from "react";
 import axios from "axios";
-import ReactTable from "react-table";
+import Card from "./card.component";
 
 export default class Content extends React.Component {
   constructor(props) {
@@ -25,44 +25,7 @@ export default class Content extends React.Component {
     return (
       <div className="grid">
         {this.state.pos.map(item => (
-          <article>
-            <div className="timeStamp">
-              <span className="timeStamp">Zeitpunkt:</span> {item.timeStamp}
-            </div>
-            <hr />
-            <div>
-              <span>Longitude: </span> {item.long}
-            </div>
-            <div>
-              <span>Latitude:</span> {item.lat}
-            </div>
-            <div>
-              <span>Altitude:</span> {item.alt}
-            </div>
-            <div>
-              <span>Acceleration X:</span> {item.accX}
-            </div>
-            <div>
-              <span>Acceleration Y:</span> {item.accY}
-            </div>
-            <div>
-              <span>Acceleration Z:</span> {item.accZ}
-            </div>
-            <div>
-              <span>Proximity [cm]:</span> {item.prox}
-            </div>
-            <div>
-              <span>Rotation X:</span> {item.axisX}
-            </div>
-            <div>
-              <span>Rotation Y:</span> {item.axisY}
-            </div>
-            <div>
-              <span>Rotation Z (Azimuth): </span>
-              {item.axisZ}
-            </div>
-           
-          </article>
+          <Card item={item} />
         ))}
       </div>
     );

@@ -7,6 +7,14 @@
   font-family: Purista;
 }
 
+a {
+  color: black;
+  text-decoration: none;
+}
+.info {
+  text-align: center;
+}
+
 .App-header {
   background-color: #ff0000;
   min-height: 20vh;
@@ -36,7 +44,7 @@
   padding-left: 10px;
   padding-right: 10px;
 }
-.grid > article {
+article {
   border: 1px solid #ccc;
   box-shadow: 2px 2px 6px 0px rgba(0, 0, 0, 0.3);
   padding: 10px;
