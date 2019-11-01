@@ -5,10 +5,15 @@ Beinhaltet zunächst folgende Felder:
 * lat: Number
 * long: Number
 * timeStamp: String
+* alt
+* acceleration x,y,z / accX, accY,accZ
+* prox(imity)
+* Ortientation / Neigung um x,y,z
 
 ## Endpoints
 
-* localhost:5000/api/position/send
+* POST: localhost:5000/api/position/send
+* GET: /api/position/all
 
 ## Setup
 
