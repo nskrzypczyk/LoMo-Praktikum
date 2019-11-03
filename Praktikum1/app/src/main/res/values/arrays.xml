@@ -15,4 +15,9 @@
         <item>SENSOR_DELAY_UI</item>
         <item>SENSOR_DELAY_NORMAL</item>
     </string-array>
+    <string-array name="location_provider">
+        <item>gps</item>
+        <item>network</item>
+        <item>passive</item>
+    </string-array>
 </resources>

@@ -31,5 +31,11 @@
         android:entryValues="@array/sensor_delay"
         android:key="sensor_delay"
         android:title="Sensor Delay" />
+    <ListPreference
+        android:defaultValue="GPS_PROVIDER"
+        android:entries="@array/location_provider"
+        android:entryValues="@array/location_provider"
+        android:key="provider"
+        android:title="Location Provider" />
 
 </PreferenceScreen>
