@@ -39,7 +39,7 @@ a {
 
 button.toggleMarkers,
 .toggleHeatmap {
-  position: fixed;
+  position: absolute;
   z-index: 999;
   bottom: 1;
   float: left;
