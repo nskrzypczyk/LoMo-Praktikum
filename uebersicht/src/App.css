@@ -37,6 +37,18 @@ a {
   font-size: 15pt;
 }
 
+button.toggleMarkers,
+.toggleHeatmap {
+  position: fixed;
+  z-index: 999;
+  bottom: 1;
+  float: left;
+  margin-left: 3%;
+}
+.toggleHeatmap {
+  margin-left: 10%;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
