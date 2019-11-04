@@ -43,7 +43,7 @@ public class LogsActivity extends AppCompatActivity {
             for(int i = 0; i < log.length; i++) {
 
                 // ggf. den String trimmen, damit alles in die Tabelle passt
-                if(i > 0) {
+                if(i > 0 && log[i].length()>7) {
                     log[i] = log[i].substring(0,7);
                 }
 
