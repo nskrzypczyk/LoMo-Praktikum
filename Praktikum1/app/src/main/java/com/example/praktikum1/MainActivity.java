@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      */
     public String getLocationProvider(){
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        String val = sp.getString("provider", "oof");
+        String val = sp.getString("provider", "gps");
         return val;
 
     }
