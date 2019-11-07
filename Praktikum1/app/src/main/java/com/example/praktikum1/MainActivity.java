@@ -220,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         };
         configureButton();
-
+        this.stopService();
     }
 
     @Override
@@ -429,11 +429,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
+    private void stopService(){
+        Intent stop = new Intent(getApplicationContext(),BackgroundService.class);
+        stopService(stop);
+    }
+
     @Override
     protected void onStop() {
-        System.out.println("Starte Hintergrund-Datensammler");
-        Intent start = new Intent(getApplicationContext(),BackgroundService.class);
-        ContextCompat.startForegroundService(this,start);
+
+        if(btnStop.getVisibility() == View.VISIBLE){ // Wenn der Sammler bereits im Vordergrund läuft
+            System.out.println("Starte Hintergrund-Datensammler");
+            Intent start = new Intent(getApplicationContext(),BackgroundService.class);
+            ContextCompat.startForegroundService(this,start);
+        }
+
         super.onStop();
     }
 }
