@@ -17,9 +17,11 @@
     <uses-permission android:name="android.permission.REQUEST_WRITE_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
 
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/favicon"
         android:label="@string/app_name"
@@ -48,7 +50,7 @@
                 android:value="com.example.praktikum1.MainActivity" />
         </activity>
         <activity
-            android:name=".LogsActivity"
+            android:name=".App"
             android:label="@string/title_activity_logs"
             android:parentActivityName=".MainActivity">
             <meta-data
@@ -70,6 +72,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".BackgroundService"
+            ></service>
     </application>
 
 </manifest>

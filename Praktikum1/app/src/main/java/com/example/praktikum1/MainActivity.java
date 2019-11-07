@@ -29,6 +29,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import org.json.JSONObject;
@@ -426,5 +427,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    @Override
+    protected void onStop() {
+        System.out.println("Starte Hintergrund-Datensammler");
+        Intent start = new Intent(getApplicationContext(),BackgroundService.class);
+        ContextCompat.startForegroundService(this,start);
+        super.onStop();
     }
 }
