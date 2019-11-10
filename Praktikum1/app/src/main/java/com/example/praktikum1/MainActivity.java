@@ -53,12 +53,13 @@ import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 
 import lombok.Getter;
+import lombok.Setter;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
+@Getter  @Setter
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     Button btnUpdate, btnStop;
     TextView tvGPSLong, tvGPSLat, tvGPSAlt, tvAcc,tvProx, tvAxis;
@@ -431,7 +432,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void stopService(){
         Intent stop = new Intent(getApplicationContext(),BackgroundService.class);
-        stopService(stop);
+        this.getApplicationContext().stopService(stop);
     }
 
     @Override
@@ -441,6 +442,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             System.out.println("Starte Hintergrund-Datensammler");
             Intent start = new Intent(getApplicationContext(),BackgroundService.class);
             ContextCompat.startForegroundService(this,start);
+            sensorManager.unregisterListener(this);
+            locManager.removeUpdates(locListener);
         }
 
         super.onStop();
