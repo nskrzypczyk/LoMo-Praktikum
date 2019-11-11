@@ -46,7 +46,6 @@ public class BackgroundService extends Service {
     Position position;
 
     String notificationText= "TEST";
-
     // Service-Gedöns
     Notification notification;
     public static final String CHANNEL_ID = "CID";
@@ -56,6 +55,7 @@ public class BackgroundService extends Service {
         super.onCreate();
 
         locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE); // locationmanager instanz
+
         sensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
         locListener = new LocationListener() {
             @Override // wird aufgerufen, wenn es Positionsupdates gibt
@@ -97,6 +97,7 @@ public class BackgroundService extends Service {
             @Override // checkt ob Standort aus ist
             public void onProviderDisabled(String provider) {
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
             }
         };
@@ -124,7 +125,7 @@ public class BackgroundService extends Service {
 
         startForeground(1, notification);
 
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     @Override
