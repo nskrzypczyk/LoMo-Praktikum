@@ -248,6 +248,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 intent = new Intent(MainActivity.this, MapsActivity.class);
                 startActivity(intent);
                 return true;
+            case R.id.actionMenu_statistics:
+                intent = new Intent(MainActivity.this, StatisticsActivity.class);
+                startActivity(intent);
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
