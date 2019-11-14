@@ -444,14 +444,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onStop() {
 
-        if(btnStop.getVisibility() == View.VISIBLE){ // Wenn der Sammler bereits im Vordergrund läuft
-            System.out.println("Starte Hintergrund-Datensammler");
-            Intent start = new Intent(getApplicationContext(),BackgroundService.class);
-            start.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            ContextCompat.startForegroundService(this,start);
-            sensorManager.unregisterListener(this);
-            locManager.removeUpdates(locListener);
-        }
+//        if(btnStop.getVisibility() == View.VISIBLE){ // Wenn der Sammler bereits im Vordergrund läuft
+//            System.out.println("Starte Hintergrund-Datensammler");
+//            Intent start = new Intent(getApplicationContext(),BackgroundService.class);
+//            start.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//            ContextCompat.startForegroundService(this,start);
+//            sensorManager.unregisterListener(this);
+//            locManager.removeUpdates(locListener);
+//        }
 
         super.onStop();
     }
