@@ -1,28 +1,24 @@
 package com.example.praktikum1;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
+import android.content.res.Resources;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.*;
 
 import java.util.Calendar;
 
 
-public class FusedLocation implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
+public class FusedLocation implements ConnectionCallbacks, OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
 
     public static final long UPDATE_INTERVALL = 3000;
@@ -46,10 +42,13 @@ public class FusedLocation implements ConnectionCallbacks, OnConnectionFailedLis
     private float minAccuracy = 35;
     private int maxTries = 1;
     private boolean lastKnownLocation = false;
+    Resources res = MainActivity.getInstance().getResources();
+    String[] providers = res.getStringArray(R.array.location_provider_prak2);
 
     public FusedLocation(Context c, Callback callback) {
         this.mContext = c;
         this.mCallback = callback;
+        this.getCurrentLocation();
     }
     
     /**
@@ -104,6 +103,7 @@ public class FusedLocation implements ConnectionCallbacks, OnConnectionFailedLis
 
     @Override
     public void onLocationChanged(Location location) {
+        chooseNetworkGps();
         numTries++;
         if (mCurrentLocation == null)
             mCurrentLocation = location;
@@ -113,9 +113,6 @@ public class FusedLocation implements ConnectionCallbacks, OnConnectionFailedLis
         if (numTries >= maxTries) {
             mCallback.onLocationResult(mCurrentLocation);
             stopLocationUpdates();
-        } else {
-            chooseNetworkGps();
-            //Toast.makeText(mContext, "latitude: "+mCurrentLocation.getLatitude()+" Longitude: "+mCurrentLocation.getLongitude(), Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -181,11 +178,12 @@ public class FusedLocation implements ConnectionCallbacks, OnConnectionFailedLis
     }
 
     private void chooseNetworkGps() {
-        if (isGPSEnabled()) {
+        if (Prak2.chosenProvider.equals(providers[0])) {
             PRIORITY = LocationRequest.PRIORITY_HIGH_ACCURACY;
-        } else if (isNetworkEnabled()) {
+        } else if (Prak2.chosenProvider.equals(providers[1])) {
             PRIORITY = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY;
-        } else {
+        }
+        else {
             PRIORITY = LocationRequest.PRIORITY_NO_POWER;
         }
     }
