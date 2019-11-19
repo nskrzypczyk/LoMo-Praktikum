@@ -46,10 +46,11 @@ public class Prak2 extends Activity implements
     GoogleApiClient mGoogleApiClient;
     Location mCurrentLocation;
     String timeStamp;
-
-
+    Position currentPos;
+    private String[] modes;
+    private boolean isActive = false;
     private Spinner spRoutes, spProvider;
-    private TextView tvLat, tvLong;
+    private TextView tvLat, tvLong, tvAlt;
     private Button btnStart, btnTimestamp;
 
     public static String chosenRoute;
@@ -61,6 +62,9 @@ public class Prak2 extends Activity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_prak2);
+        modes = getResources().getStringArray(R.array.location_provider_prak2);
+        this.initComponents();
+        this.initListeners();
 
         if (!isGooglePlayServicesAvailable()) {
             finish();
@@ -72,9 +76,6 @@ public class Prak2 extends Activity implements
                 .addOnConnectionFailedListener(this)
                 .build();
         mGoogleApiClient.connect();
-
-        this.initComponents();
-        this.initListeners();
     }
 
     private boolean isGooglePlayServicesAvailable() {
@@ -87,12 +88,33 @@ public class Prak2 extends Activity implements
         }
     }
 
+    private int getPrio(){
+        if(modes == null){
+            modes = getResources().getStringArray(R.array.location_provider_prak2);
+        }
+        if(chosenProvider.equals(modes[0])){
+            return LocationRequest.PRIORITY_HIGH_ACCURACY;
+        }
+        else if(chosenProvider.equals(modes[1])){
+            return LocationRequest.PRIORITY_LOW_POWER;
+        }
+        else{
+            this.onPause();
+            return 0;
+        }
+    }
+
     // TODO: WERTE AUS DEN DROPDOWN LESEN
     protected void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(INTERVAL);
-        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        try {
+            mLocationRequest = new LocationRequest();
+            mLocationRequest.setInterval(INTERVAL);
+            mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+            mLocationRequest.setPriority(getPrio());
+            Log.i(TAG, "Derzeitiger Provider ist: " + getPrio());
+        }catch(Exception e){
+
+        }
     }
 
 
@@ -100,15 +122,9 @@ public class Prak2 extends Activity implements
     private void updateUI() {
         Log.d(TAG, "UI wird geupdated");
         if (null != mCurrentLocation) {
-//            String lat = String.valueOf(mCurrentLocation.getLatitude());
-//            String lng = String.valueOf(mCurrentLocation.getLongitude());
-//            tvLocation.setText("At Time: " + mLastUpdateTime + "\n" +
-//                    "Latitude: " + lat + "\n" +
-//                    "Longitude: " + lng + "\n" +
-//                    "Accuracy: " + mCurrentLocation.getAccuracy() + "\n" +
-//                    "Provider: " + mCurrentLocation.getProvider());
             tvLat.setText(mCurrentLocation.getLatitude()+"");
             tvLong.setText(mCurrentLocation.getLongitude()+"");
+            tvAlt.setText(mCurrentLocation.getAltitude()+"");
         } else {
             Log.d(TAG, "location ist null");
         }
@@ -117,12 +133,13 @@ public class Prak2 extends Activity implements
 
 
     private void initComponents(){
-        this.spRoutes=findViewById(R.id.spRoutes);
+        this.spRoutes=this.findViewById(R.id.spRoutes);
         this.spProvider=findViewById(R.id.spProvider);
-        this.tvLat = findViewById(R.id.tvLat);
-        this.tvLong =findViewById(R.id.tvLong);
-        this.btnStart = findViewById(R.id.btnStart);
-        this.btnTimestamp = findViewById(R.id.btnTimestamp);
+        this.tvLat = this.findViewById(R.id.tvLat);
+        this.tvLong =this.findViewById(R.id.tvLong);
+        this.tvAlt=this.findViewById(R.id.tvAlt);
+        this.btnStart = this.findViewById(R.id.btnStart);
+        this.btnTimestamp = this.findViewById(R.id.btnTimestamp);
 
         chosenProvider = spProvider.getSelectedItem().toString();
     }
@@ -131,15 +148,29 @@ public class Prak2 extends Activity implements
         spProvider.setOnItemSelectedListener(new OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-
+                chosenProvider = parentView.getItemAtPosition(position).toString();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
-                // your code here
+                // Mach nix yo
             }
 
         });
+
+        spRoutes.setOnItemSelectedListener(new OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                chosenRoute = parentView.getItemAtPosition(position).toString();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // Mach nix yo
+            }
+
+        });
+
         btnStart.setOnClickListener(e-> {
             onStart();
             updateUI();
@@ -149,12 +180,14 @@ public class Prak2 extends Activity implements
 
     }
 
-    @Override
     public void onStart() {
         super.onStart();
-        if (mGoogleApiClient.isConnected()) {
+        if (mGoogleApiClient.isConnected() && !chosenProvider.equals(modes[2])) {
             startLocationUpdates();
             Log.d(TAG, "Location updates laufen");
+        }
+        else{
+            //LOCATION MANAGER SHIT HIER
         }
     }
 
@@ -169,7 +202,6 @@ public class Prak2 extends Activity implements
     @Override
     public void onConnected(Bundle bundle) {
         Log.d(TAG, "onConnected - isConnected? -> " + mGoogleApiClient.isConnected());
-        startLocationUpdates();
     }
 
     protected void startLocationUpdates() {
@@ -194,6 +226,7 @@ public class Prak2 extends Activity implements
         mCurrentLocation = location;
         timeStamp = DateFormat.getTimeInstance().format(new Date());
         updateUI();
+        createLocationRequest();
     }
 
     @Override

@@ -45,8 +45,8 @@
 
     <ScrollView
         android:id="@+id/scrollView2"
-        android:layout_width="298dp"
-        android:layout_height="111dp"
+        android:layout_width="310dp"
+        android:layout_height="212dp"
         android:layout_marginBottom="84dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -88,6 +88,23 @@
 
             <TextView
                 android:id="@+id/tvLong"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:text="Hier könnte Ihre Werbung stehen!"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+
+            <TextView
+                android:id="@+id/textView9"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Höhe"
+                android:textAllCaps="true"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvAlt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
