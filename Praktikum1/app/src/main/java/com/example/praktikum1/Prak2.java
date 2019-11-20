@@ -61,7 +61,7 @@ public class Prak2 extends Activity implements
     android.location.LocationListener locListener;
     LocationManager locManager;
 
-
+    private boolean selectedLocManager = false;
     private String[] modes;
     private boolean isActive = false;
     private Spinner spRoutes, spProvider;
@@ -174,6 +174,7 @@ public class Prak2 extends Activity implements
         }
         else{
             this.onPause();
+            selectedLocManager=true;
             return 0;
         }
     }
@@ -214,7 +215,7 @@ public class Prak2 extends Activity implements
         this.tvAlt=this.findViewById(R.id.tvAlt);
         this.btnStart = this.findViewById(R.id.btnStart);
         this.btnTimestamp = this.findViewById(R.id.btnTimestamp);
-
+        selectedLocManager  =false;
         chosenProvider = spProvider.getSelectedItem().toString();
     }
 
@@ -223,6 +224,7 @@ public class Prak2 extends Activity implements
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 chosenProvider = parentView.getItemAtPosition(position).toString();
+
             }
 
             @Override
@@ -246,8 +248,16 @@ public class Prak2 extends Activity implements
         });
 
         btnStart.setOnClickListener(e-> {
-            onStart();
-            updateUI();
+            if(!isActive){
+                onStart();
+                updateUI();
+                btnStart.setText("STOP");
+                isActive=true;
+            }else{
+                onPause();
+                isActive=false;
+                btnStart.setText("START");
+            }
 
         });
 
@@ -256,6 +266,7 @@ public class Prak2 extends Activity implements
 
     public void onStart() {
         super.onStart();
+        mGoogleApiClient.connect();
         if (mGoogleApiClient.isConnected() && !chosenProvider.equals(modes[2])) {
             startLocationUpdates();
             Log.d(TAG, "Location updates laufen");
@@ -276,9 +287,13 @@ public class Prak2 extends Activity implements
     @Override
     public void onConnected(Bundle bundle) {
         Log.d(TAG, "onConnected - isConnected? -> " + mGoogleApiClient.isConnected());
+        if(isActive && !chosenProvider.equals(modes[2])){
+            startLocationUpdates();
+        }
     }
 
     protected void startLocationUpdates() {
+        mGoogleApiClient.connect();
         PendingResult<Status> pendingResult = LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, this);
         Log.d(TAG, "Location updates starten");
@@ -310,19 +325,20 @@ public class Prak2 extends Activity implements
     }
 
     protected void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient, this);
-        mGoogleApiClient.disconnect();
-        Log.d(TAG, "Location updates gestoppt");
+        try {
+            LocationServices.FusedLocationApi.removeLocationUpdates(
+                    mGoogleApiClient, this);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+            mGoogleApiClient.disconnect();
+            Log.d(TAG, "Location updates gestoppt");
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (mGoogleApiClient.isConnected()) {
-            startLocationUpdates();
-            Log.d(TAG, "Location updates laufen weiter");
-        }
     }
 
 
