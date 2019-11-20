@@ -73,7 +73,6 @@ public class Prak2 extends Activity implements
     public static String chosenProvider;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,8 +99,8 @@ public class Prak2 extends Activity implements
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE }, 10);
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE}, 10);
             }
         }
     }
@@ -162,19 +161,30 @@ public class Prak2 extends Activity implements
         }
     }
 
-    private int getPrio(){
-        if(modes == null){
+    private void checkLocationPermission() {
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.INTERNET}, 10);
+            }
+            return;
+        }
+    }
+
+    private int getPrio() {
+        if (modes == null) {
             modes = getResources().getStringArray(R.array.location_provider_prak2);
         }
-        if(chosenProvider.equals(modes[0])){
+        if (chosenProvider.equals(modes[0])) {
+            selectedLocManager=false;
             return LocationRequest.PRIORITY_HIGH_ACCURACY;
-        }
-        else if(chosenProvider.equals(modes[1])){
+        } else if (chosenProvider.equals(modes[1])) {
+            selectedLocManager=false;
             return LocationRequest.PRIORITY_LOW_POWER;
-        }
-        else{
+        } else {
             this.onPause();
-            selectedLocManager=true;
+            selectedLocManager = true;
             return 0;
         }
     }
@@ -187,35 +197,33 @@ public class Prak2 extends Activity implements
             mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
             mLocationRequest.setPriority(getPrio());
             Log.i(TAG, "Derzeitiger Provider ist: " + getPrio());
-        }catch(Exception e){
+        } catch (Exception e) {
 
         }
     }
 
 
-
     private void updateUI() {
         Log.d(TAG, "UI wird geupdated");
         if (null != mCurrentLocation) {
-            tvLat.setText(mCurrentLocation.getLatitude()+"");
-            tvLong.setText(mCurrentLocation.getLongitude()+"");
-            tvAlt.setText(mCurrentLocation.getAltitude()+"");
+            tvLat.setText(mCurrentLocation.getLatitude() + "");
+            tvLong.setText(mCurrentLocation.getLongitude() + "");
+            tvAlt.setText(mCurrentLocation.getAltitude() + "");
         } else {
             Log.d(TAG, "location ist null");
         }
     }
 
 
-
-    private void initComponents(){
-        this.spRoutes=this.findViewById(R.id.spRoutes);
-        this.spProvider=findViewById(R.id.spProvider);
+    private void initComponents() {
+        this.spRoutes = this.findViewById(R.id.spRoutes);
+        this.spProvider = findViewById(R.id.spProvider);
         this.tvLat = this.findViewById(R.id.tvLat);
-        this.tvLong =this.findViewById(R.id.tvLong);
-        this.tvAlt=this.findViewById(R.id.tvAlt);
+        this.tvLong = this.findViewById(R.id.tvLong);
+        this.tvAlt = this.findViewById(R.id.tvAlt);
         this.btnStart = this.findViewById(R.id.btnStart);
         this.btnTimestamp = this.findViewById(R.id.btnTimestamp);
-        selectedLocManager  =false;
+        selectedLocManager = false;
         chosenProvider = spProvider.getSelectedItem().toString();
     }
 
@@ -224,6 +232,7 @@ public class Prak2 extends Activity implements
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 chosenProvider = parentView.getItemAtPosition(position).toString();
+                getPrio();
 
             }
 
@@ -247,15 +256,17 @@ public class Prak2 extends Activity implements
 
         });
 
-        btnStart.setOnClickListener(e-> {
-            if(!isActive){
+        btnStart.setOnClickListener(e -> {
+            if (!isActive) {
+
                 onStart();
-                updateUI();
+                if(!selectedLocManager)
+                    updateUI();
                 btnStart.setText("STOP");
-                isActive=true;
-            }else{
+                isActive = true;
+            } else {
                 onPause();
-                isActive=false;
+                isActive = false;
                 btnStart.setText("START");
             }
 
@@ -266,13 +277,16 @@ public class Prak2 extends Activity implements
 
     public void onStart() {
         super.onStart();
-        mGoogleApiClient.connect();
-        if (mGoogleApiClient.isConnected() && !chosenProvider.equals(modes[2])) {
-            startLocationUpdates();
-            Log.d(TAG, "Location updates laufen");
-        }
-        else{
-            //LOCATION MANAGER SHIT HIER
+        if (!selectedLocManager) {
+            mGoogleApiClient.connect();
+            if (mGoogleApiClient.isConnected()) {
+                startLocationUpdates();
+                Log.d(TAG, "Location updates laufen");
+            }
+        } else {
+            Log.i(TAG, "Starte den Loc Manager mit GPS");
+            checkLocationPermission();
+            locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, locListener);
         }
     }
 
@@ -340,6 +354,8 @@ public class Prak2 extends Activity implements
     public void onResume() {
         super.onResume();
     }
+
+
 
 
 }
