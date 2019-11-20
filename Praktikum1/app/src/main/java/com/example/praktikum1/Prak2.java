@@ -2,6 +2,7 @@ package com.example.praktikum1;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -19,8 +20,14 @@ import com.google.android.gms.location.LocationServices;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.SensorManager;
 import android.location.Location;
+import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -32,8 +39,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class Prak2 extends Activity implements
         LocationListener,
@@ -47,11 +56,18 @@ public class Prak2 extends Activity implements
     Location mCurrentLocation;
     String timeStamp;
     Position currentPos;
+
+    // LOC MANAGER
+    android.location.LocationListener locListener;
+    LocationManager locManager;
+
+
     private String[] modes;
     private boolean isActive = false;
     private Spinner spRoutes, spProvider;
     private TextView tvLat, tvLong, tvAlt;
     private Button btnStart, btnTimestamp;
+
 
     public static String chosenRoute;
     public static String chosenProvider;
@@ -65,7 +81,8 @@ public class Prak2 extends Activity implements
         modes = getResources().getStringArray(R.array.location_provider_prak2);
         this.initComponents();
         this.initListeners();
-
+        this.setUpLocManager();
+        this.checkWritePermission();
         if (!isGooglePlayServicesAvailable()) {
             finish();
         }
@@ -76,6 +93,63 @@ public class Prak2 extends Activity implements
                 .addOnConnectionFailedListener(this)
                 .build();
         mGoogleApiClient.connect();
+
+    }
+
+    private void checkWritePermission() {
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE }, 10);
+            }
+        }
+    }
+
+    private void setUpLocManager() {
+        locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        locListener = new android.location.LocationListener() {
+            @Override // wird aufgerufen, wenn es Positionsupdates gibt
+            public void onLocationChanged(Location location) {
+                if (location == null) {
+                    System.out.println("Keine Daten");
+                }
+                Position pos = new Position();
+                try {
+                    tvLat.setText(location.getLatitude() + "");
+                    tvLong.setText(location.getLongitude() + "");
+                    tvAlt.setText(location.getAltitude() + "");
+                    String formattedDate = Utils.getTimeStamp(location);
+                    Log.d("time", "onLocationChanged: " + formattedDate);
+                    // Positionsobjekt erstellen
+                    currentPos = new Position(formattedDate, location.getLatitude(), location.getLongitude(),
+                            location.getAltitude());
+
+                } catch (Exception e) {
+                    Log.e("OOF", "onLocationChanged: ", e.getCause());
+                    tvLong.setText("ERROR");
+                    tvLat.setText("ERROR");
+                    tvAlt.setText("ERROR");
+                }
+
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+
+            }
+        };
     }
 
     private boolean isGooglePlayServicesAvailable() {

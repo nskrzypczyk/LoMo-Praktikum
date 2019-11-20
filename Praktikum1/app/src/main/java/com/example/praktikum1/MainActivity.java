@@ -173,10 +173,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     tvGPSLat.setText(location.getLatitude() + "");
                     tvGPSLong.setText(location.getLongitude() + "");
                     tvGPSAlt.setText(location.getAltitude() + "");
-                    Date date = new Date(location.getTime());
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.YYYY-HH:mm:ss");
-                    sdf.setTimeZone(TimeZone.getTimeZone("CET"));
-                    String formattedDate = sdf.format(date);
+                    String formattedDate = Utils.getTimeStamp(location);
                     Log.d("time", "onLocationChanged: " + formattedDate);
                     // Positionsobjekt erstellen
                     position = new Position(formattedDate, location.getLatitude(), location.getLongitude(),
