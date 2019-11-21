@@ -29,6 +29,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -36,13 +37,12 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import java.io.File;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+
+import okhttp3.internal.Util;
 
 public class Prak2 extends Activity implements
         LocationListener,
@@ -50,7 +50,7 @@ public class Prak2 extends Activity implements
         GoogleApiClient.OnConnectionFailedListener {
     public static String TAG = "PRAK2";
     private static final long INTERVAL = 3000;
-    private static final long FASTEST_INTERVAL = 3000;
+    private static final long FASTEST_INTERVAL = INTERVAL/2;
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
     Location mCurrentLocation;
@@ -65,12 +65,14 @@ public class Prak2 extends Activity implements
     private String[] modes;
     private boolean isActive = false;
     private Spinner spRoutes, spProvider;
-    private TextView tvLat, tvLong, tvAlt;
+    private TextView tvLat, tvLong, tvAlt, tvTimestamp;
     private Button btnStart, btnTimestamp;
 
 
     public static String chosenRoute;
     public static String chosenProvider;
+
+    static private File logFile=null;
 
 
     @Override
@@ -114,16 +116,9 @@ public class Prak2 extends Activity implements
                 if (location == null) {
                     System.out.println("Keine Daten");
                 }
-                Position pos = new Position();
                 try {
-                    tvLat.setText(location.getLatitude() + "");
-                    tvLong.setText(location.getLongitude() + "");
-                    tvAlt.setText(location.getAltitude() + "");
-                    String formattedDate = Utils.getTimeStamp(location);
-                    Log.d("time", "onLocationChanged: " + formattedDate);
-                    // Positionsobjekt erstellen
-                    currentPos = new Position(formattedDate, location.getLatitude(), location.getLongitude(),
-                            location.getAltitude());
+                    mCurrentLocation = location;
+                    updateUI();
 
                 } catch (Exception e) {
                     Log.e("OOF", "onLocationChanged: ", e.getCause());
@@ -146,7 +141,8 @@ public class Prak2 extends Activity implements
 
             @Override
             public void onProviderDisabled(String provider) {
-
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
             }
         };
     }
@@ -209,6 +205,12 @@ public class Prak2 extends Activity implements
             tvLat.setText(mCurrentLocation.getLatitude() + "");
             tvLong.setText(mCurrentLocation.getLongitude() + "");
             tvAlt.setText(mCurrentLocation.getAltitude() + "");
+            String formattedDate = Utils.getTimeStamp(mCurrentLocation);
+            Log.d("time", "onLocationChanged: " + formattedDate);
+            tvTimestamp.setText(formattedDate);
+            // Positionsobjekt erstellen
+            currentPos = new Position(formattedDate, mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(),
+                    mCurrentLocation.getAltitude());
         } else {
             Log.d(TAG, "location ist null");
         }
@@ -221,6 +223,7 @@ public class Prak2 extends Activity implements
         this.tvLat = this.findViewById(R.id.tvLat);
         this.tvLong = this.findViewById(R.id.tvLong);
         this.tvAlt = this.findViewById(R.id.tvAlt);
+        this.tvTimestamp = this.findViewById(R.id.tvTimestamp);
         this.btnStart = this.findViewById(R.id.btnStart);
         this.btnTimestamp = this.findViewById(R.id.btnTimestamp);
         selectedLocManager = false;
@@ -280,11 +283,18 @@ public class Prak2 extends Activity implements
         if (!selectedLocManager) {
             mGoogleApiClient.connect();
             if (mGoogleApiClient.isConnected()) {
+                if(chosenProvider.equals(modes[0])){
+                    logFile = Utils.Prak2LogFile(Utils.TYPE_FLP_HIGH,chosenRoute);
+                }
+                else if(chosenProvider.equals(modes[1])){
+                    logFile = Utils.Prak2LogFile(Utils.TYPE_FLP_LOW,chosenRoute);
+                }
                 startLocationUpdates();
                 Log.d(TAG, "Location updates laufen");
             }
         } else {
             Log.i(TAG, "Starte den Loc Manager mit GPS");
+            logFile = Utils.Prak2LogFile(Utils.TYPE_LM_GPS, chosenRoute);
             checkLocationPermission();
             locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, locListener);
         }

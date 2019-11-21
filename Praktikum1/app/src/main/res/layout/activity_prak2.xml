@@ -111,6 +111,23 @@
                 android:text="Hier könnte Ihre Werbung stehen!"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
+            <TextView
+                android:id="@+id/textView11"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Letzte Aktualisierung"
+                android:textAllCaps="true"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvTimestamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:text="Noch keinen Standort bekommen"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
+
         </LinearLayout>
 
     </ScrollView>
