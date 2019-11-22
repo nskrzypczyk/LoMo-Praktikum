@@ -73,6 +73,7 @@ public class Prak2 extends Activity implements
     public static String chosenProvider;
 
     static private File logFile=null;
+    static private File timestampFile = null;
 
 
     @Override
@@ -211,10 +212,12 @@ public class Prak2 extends Activity implements
             // Positionsobjekt erstellen
             currentPos = new Position(formattedDate, mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(),
                     mCurrentLocation.getAltitude());
+            Utils.printToCSV(logFile,formattedDate,mCurrentLocation);
         } else {
             Log.d(TAG, "location ist null");
         }
     }
+
 
 
     private void initComponents() {
@@ -274,7 +277,11 @@ public class Prak2 extends Activity implements
             }
 
         });
-
+        btnTimestamp.setOnClickListener(e->{
+            if(!timestampFile.equals(null)){
+                Utils.printToCSV(timestampFile,Utils.getTimeStampNow());
+            }
+        });
 
     }
 
@@ -285,9 +292,12 @@ public class Prak2 extends Activity implements
             if (mGoogleApiClient.isConnected()) {
                 if(chosenProvider.equals(modes[0])){
                     logFile = Utils.Prak2LogFile(Utils.TYPE_FLP_HIGH,chosenRoute);
+                    timestampFile = Utils.Prak2LogFile(Utils.TYPE_FLP_HIGH, chosenRoute,"timeStampFile");
                 }
                 else if(chosenProvider.equals(modes[1])){
                     logFile = Utils.Prak2LogFile(Utils.TYPE_FLP_LOW,chosenRoute);
+                    timestampFile = Utils.Prak2LogFile(Utils.TYPE_FLP_LOW, chosenRoute,"timeStampFile");
+
                 }
                 startLocationUpdates();
                 Log.d(TAG, "Location updates laufen");
@@ -295,6 +305,7 @@ public class Prak2 extends Activity implements
         } else {
             Log.i(TAG, "Starte den Loc Manager mit GPS");
             logFile = Utils.Prak2LogFile(Utils.TYPE_LM_GPS, chosenRoute);
+            timestampFile = Utils.Prak2LogFile(Utils.TYPE_LM_GPS, chosenRoute,"timeStampFile");
             checkLocationPermission();
             locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, locListener);
         }
