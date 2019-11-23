@@ -125,7 +125,7 @@ public class BackgroundService extends Service {
 
         startForeground(1, notification);
 
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
     @Override

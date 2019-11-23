@@ -15,9 +15,22 @@
         <item>SENSOR_DELAY_UI</item>
         <item>SENSOR_DELAY_NORMAL</item>
     </string-array>
+    <string-array name="location_provider_prak2">
+        <item>FLP: PRIORITY_HIGH_ACCURACY</item>
+        <item>FLP: PRIORITY_LOW_POWER</item>
+        <item>LOCMANAGER: GPS</item>
+    </string-array>
     <string-array name="location_provider">
         <item>gps</item>
         <item>network</item>
         <item>passive</item>
+    </string-array>
+    <string-array name="routes" >
+        <item>
+            route1
+        </item>
+        <item>
+            route2
+        </item>
     </string-array>
 </resources>

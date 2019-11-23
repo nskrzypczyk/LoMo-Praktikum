@@ -61,7 +61,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 @Getter  @Setter
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
-    Button btnUpdate, btnStop;
+    Button btnUpdate, btnStop, btnPrak2;
     TextView tvGPSLong, tvGPSLat, tvGPSAlt, tvAcc,tvProx, tvAxis;
     LocationListener locListener;
     SensorManager sensorManager;
@@ -137,6 +137,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         btnUpdate = findViewById(R.id.btnUpdate);
         btnStop = findViewById(R.id.btnStop);
+        btnPrak2 = findViewById(R.id.btnPrak2);
         tvGPSLong = (TextView) findViewById(R.id.tvGPSLong);
         tvGPSLat = (TextView) findViewById(R.id.tvGPSLat);
         tvGPSAlt = findViewById(R.id.tvGPSAlt);
@@ -146,6 +147,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         accGraph = findViewById(R.id.accGraph);
         accGraphController = new AccGraphController(accGraph);
+
+        btnPrak2.setOnClickListener(e->{
+            Intent i = new Intent(this, Prak2.class);
+            startActivity(i);
+        });
 
         // berechtigung für schreibzugriff auf externen speichr(SD)
         if (ActivityCompat.checkSelfPermission(this,
@@ -167,10 +173,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     tvGPSLat.setText(location.getLatitude() + "");
                     tvGPSLong.setText(location.getLongitude() + "");
                     tvGPSAlt.setText(location.getAltitude() + "");
-                    Date date = new Date(location.getTime());
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.YYYY-HH:mm:ss");
-                    sdf.setTimeZone(TimeZone.getTimeZone("CET"));
-                    String formattedDate = sdf.format(date);
+                    String formattedDate = Utils.getTimeStamp(location);
                     Log.d("time", "onLocationChanged: " + formattedDate);
                     // Positionsobjekt erstellen
                     position = new Position(formattedDate, location.getLatitude(), location.getLongitude(),
@@ -442,14 +445,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onStop() {
 
-        if(btnStop.getVisibility() == View.VISIBLE){ // Wenn der Sammler bereits im Vordergrund läuft
-            System.out.println("Starte Hintergrund-Datensammler");
-            Intent start = new Intent(getApplicationContext(),BackgroundService.class);
-            start.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            ContextCompat.startForegroundService(this,start);
-            sensorManager.unregisterListener(this);
-            locManager.removeUpdates(locListener);
-        }
+//        if(btnStop.getVisibility() == View.VISIBLE){ // Wenn der Sammler bereits im Vordergrund läuft
+//            System.out.println("Starte Hintergrund-Datensammler");
+//            Intent start = new Intent(getApplicationContext(),BackgroundService.class);
+//            start.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//            ContextCompat.startForegroundService(this,start);
+//            sensorManager.unregisterListener(this);
+//            locManager.removeUpdates(locListener);
+//        }
 
         super.onStop();
     }
