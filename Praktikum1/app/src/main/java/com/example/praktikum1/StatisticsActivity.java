@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.IllegalFormatException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -75,38 +76,38 @@ public class StatisticsActivity extends AppCompatActivity {
         }).collect(Collectors.toList());
 
         // Dateien mit den Positionen lesen
-        File flpHighLocFile = files.stream().filter(f -> f.getName().contains(Utils.TYPE_FLP_HIGH)).findFirst().get();
-        if(flpHighLocFile.exists()) {
-            flpHighLocationList = readRecordedLocations(flpHighLocFile);
+        Optional<File> opt = files.stream().filter(f -> f.getName().contains(Utils.TYPE_FLP_HIGH)).findFirst();
+        if(opt.isPresent() && opt.get().exists()) {
+            flpHighLocationList = readRecordedLocations(opt.get());
         }
 
-        File flpLowLocFile = files.stream().filter(f -> f.getName().contains(Utils.TYPE_FLP_LOW)).findFirst().get();
-        if(flpLowLocFile.exists()) {
-            flpLowLocationList = readRecordedLocations(flpLowLocFile);
+        opt = files.stream().filter(f -> f.getName().contains(Utils.TYPE_FLP_LOW)).findFirst();
+        if(opt.isPresent() && opt.get().exists()) {
+            flpLowLocationList = readRecordedLocations(opt.get());
         }
 
-        File lmLocFile = files.stream().filter(f -> f.getName().contains(Utils.TYPE_LM_GPS)).findFirst().get();
-        if(lmLocFile.exists()) {
-            lmLocationList = readRecordedLocations(lmLocFile);
+        opt = files.stream().filter(f -> f.getName().contains(Utils.TYPE_LM_GPS)).findFirst();
+        if(opt.isPresent() && opt.get().exists()) {
+            lmLocationList = readRecordedLocations(opt.get());
         }
 
         // Die Timestamps für die Flags holen
         String flpHighTimestampFilePattern = Utils.TYPE_FLP_HIGH + "_" + selectedRoute + ".timestamp.csv";
-        File flpHighTimestampFile = files.stream().filter(f -> f.getName().contains(flpHighTimestampFilePattern)).findFirst().get();
-        if(flpHighTimestampFile.exists()) {
-            flpHighFlagTimestampList = readRecordedTimestamps(flpHighTimestampFile);
+        opt = files.stream().filter(f -> f.getName().contains(flpHighTimestampFilePattern)).findFirst();
+        if(opt.isPresent() && opt.get().exists()) {
+            flpHighFlagTimestampList = readRecordedTimestamps(opt.get());
         }
 
         String flpLowTimestampFilePattern = Utils.TYPE_FLP_LOW + "_" + selectedRoute + ".timestamp.csv";
-        File flpLowTimestampFile = files.stream().filter(f -> f.getName().contains(flpLowTimestampFilePattern)).findFirst().get();
-        if(flpLowTimestampFile.exists()) {
-            flpLowFlagTimestampList = readRecordedTimestamps(flpLowTimestampFile);
+        opt = files.stream().filter(f -> f.getName().contains(flpLowTimestampFilePattern)).findFirst();
+        if(opt.isPresent() && opt.get().exists()) {
+            flpLowFlagTimestampList = readRecordedTimestamps(opt.get());
         }
 
         String lmTimestampFilePattern = Utils.TYPE_LM_GPS + "_" + selectedRoute + ".timestamp.csv";
-        File lmTimestampFile = files.stream().filter(f -> f.getName().contains(lmTimestampFilePattern)).findFirst().get();
-        if(lmTimestampFile.exists()) {
-            lmFlagTimestampList = readRecordedTimestamps(lmTimestampFile);
+        opt = files.stream().filter(f -> f.getName().contains(lmTimestampFilePattern)).findFirst();
+        if(opt.isPresent() && opt.get().exists()) {
+            lmFlagTimestampList = readRecordedTimestamps(opt.get());
         }
     }
 
