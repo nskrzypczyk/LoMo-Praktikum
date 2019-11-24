@@ -27,6 +27,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
+
+        <activity android:name=".StatisticsActivity"></activity>
         <activity android:name=".Prak2"></activity>
 
         <uses-library
