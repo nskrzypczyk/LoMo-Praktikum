@@ -239,7 +239,7 @@ public class Prak2 extends Activity implements
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 chosenProvider = parentView.getItemAtPosition(position).toString();
                 getPrio();
-
+                onPause();
             }
 
             @Override
@@ -265,7 +265,7 @@ public class Prak2 extends Activity implements
         btnStart.setOnClickListener(e -> {
             if (!isActive) {
 
-                onStart();
+                start();
                 if(!selectedLocManager)
                     updateUI();
                 btnStart.setText("STOP");
@@ -285,23 +285,21 @@ public class Prak2 extends Activity implements
 
     }
 
-    public void onStart() {
-        super.onStart();
+    public void start(){
         if (!selectedLocManager) {
+            if (chosenProvider.equals(modes[0])) {
+                logFile = Utils.Prak2LogFile(Utils.TYPE_FLP_HIGH, chosenRoute);
+                timestampFile = Utils.Prak2LogFile(Utils.TYPE_FLP_HIGH, chosenRoute, "timeStampFile");
+            } else if (chosenProvider.equals(modes[1])) {
+                logFile = Utils.Prak2LogFile(Utils.TYPE_FLP_LOW, chosenRoute);
+                timestampFile = Utils.Prak2LogFile(Utils.TYPE_FLP_LOW, chosenRoute, "timeStampFile");
+            }
             mGoogleApiClient.connect();
-            if (mGoogleApiClient.isConnected()) {
-                if(chosenProvider.equals(modes[0])){
-                    logFile = Utils.Prak2LogFile(Utils.TYPE_FLP_HIGH,chosenRoute);
-                    timestampFile = Utils.Prak2LogFile(Utils.TYPE_FLP_HIGH, chosenRoute,"timeStampFile");
-                }
-                else if(chosenProvider.equals(modes[1])){
-                    logFile = Utils.Prak2LogFile(Utils.TYPE_FLP_LOW,chosenRoute);
-                    timestampFile = Utils.Prak2LogFile(Utils.TYPE_FLP_LOW, chosenRoute,"timeStampFile");
-
-                }
+            if(mGoogleApiClient.isConnected()) {
                 startLocationUpdates();
                 Log.d(TAG, "Location updates laufen");
             }
+
         } else {
             Log.i(TAG, "Starte den Loc Manager mit GPS");
             logFile = Utils.Prak2LogFile(Utils.TYPE_LM_GPS, chosenRoute);
@@ -309,6 +307,10 @@ public class Prak2 extends Activity implements
             checkLocationPermission();
             locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, locListener);
         }
+    }
+
+    public void onStart() {
+        super.onStart();
     }
 
     @Override
@@ -356,6 +358,8 @@ public class Prak2 extends Activity implements
     @Override
     protected void onPause() {
         super.onPause();
+        isActive=false;
+        btnStart.setText("START");
         stopLocationUpdates();
     }
 

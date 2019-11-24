@@ -66,6 +66,7 @@ public class Utils {
             writer.close();
 
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
