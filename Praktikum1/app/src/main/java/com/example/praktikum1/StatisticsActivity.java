@@ -206,15 +206,22 @@ public class StatisticsActivity extends AppCompatActivity {
             statusTextView.setText("STATUS: Datenformat korrekt!");
 
             // TODO: Verallgemeinern und gegen Fehler absichern
-            List<Location> interpolated = interpolate(
-                    flagList.get(0),
-                    flagList.get(1),
-                    flpHighFlagTimestampList.get(0),
-                    flpHighFlagTimestampList.get(1));
-
+            // Wird benötigt, da in der gesamten Timestamp-Liste die bereits
+            // abgearbeiteten Timestamps berücksichtigt werden müssen
             List<Float> errorFlpHigh = new LinkedList<>();
-            for(int i = 0; i < interpolated.size(); i++) {
-                errorFlpHigh.add(interpolated.get(i).distanceTo(flpHighLocationList.get(i)));
+            int offset = 0;
+            for(int j = 1; j < flagList.size(); j++) {
+                List<Location> interpolated = interpolate(
+                        flagList.get(j - 1),
+                        flagList.get(j),
+                        flpHighFlagTimestampList.get(j - 1),
+                        flpHighFlagTimestampList.get(j));
+
+                for (int i = 0; i < interpolated.size(); i++) {
+                    errorFlpHigh.add(interpolated.get(i).distanceTo(flpHighLocationList.get(i + offset)));
+                }
+
+                offset += interpolated.size() - 1;
             }
 
             Collections.sort(errorFlpHigh);
