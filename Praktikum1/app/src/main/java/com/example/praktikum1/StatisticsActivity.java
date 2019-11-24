@@ -202,6 +202,8 @@ public class StatisticsActivity extends AppCompatActivity {
         cdfGraph.getViewport().setMaxY(1);
         cdfGraph.getViewport().setYAxisBoundsManual(true);
 
+        cdfGraph.getGridLabelRenderer().setPadding(40);
+
         if(doStatistics) {
             statusTextView.setText("STATUS: Datenformat korrekt!");
 
