@@ -2,19 +2,151 @@ package com.example.praktikum1;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.jjoe64.graphview.GraphView;
+import com.opencsv.CSVParser;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.IllegalFormatException;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class StatisticsActivity extends AppCompatActivity {
+
+    private static String TAG = "STAT";
 
     // GUI-ELEMENTS
     private Spinner routeSelector;
     private TextView statusTextView;
     // GraphView
     private GraphView cdfGraph;
+
+    private final CSVParser CSV_PARSER = new CSVParserBuilder().withIgnoreQuotations(true).withSeparator(';').build();
+
+    // DATA
+    private List<Location> flpHighLocationList;
+    private List<Location> flpLowLocationList;
+    private List<Location> lmLocationList;
+    private List<Location> flagList;
+    private List<Date> flpHighFlagTimestampList;
+    private List<Date> flpLowFlagTimestampList;
+    private List<Date> lmFlagTimestampList;
+
+    private void readData() throws Exception {
+        File outputDir = new File(Constants.OUTPUT_DIR);
+        String selectedRoute = "route1";
+
+        List<File> files = Arrays.stream(outputDir.list())
+                .filter(name -> name.contains(selectedRoute))
+                .map(str -> new File(outputDir + File.separator + str)).collect(Collectors.toList());
+
+        files.forEach(file  -> Log.d(TAG, file.getName()));
+
+        // Flags der Route auslesen
+        File flagFile = files.stream().filter(f -> f.getName().equals(selectedRoute + ".csv")).findFirst().get();
+        CSVReader flagReader = new CSVReaderBuilder(new FileReader(flagFile))
+                .withCSVParser(CSV_PARSER)
+                .build();
+
+        List<String[]> entries = flagReader.readAll();
+        flagList = entries.stream().map(entry -> {
+            Location loc = new Location("flag");
+            loc.setLatitude(Double.parseDouble(entry[0]));
+            loc.setLongitude(Double.parseDouble(entry[1]));
+            return loc;
+        }).collect(Collectors.toList());
+
+        // Dateien mit den Positionen lesen
+        File flpHighLocFile = files.stream().filter(f -> f.getName().contains(Utils.TYPE_FLP_HIGH)).findFirst().get();
+        if(flpHighLocFile.exists()) {
+            flpHighLocationList = readRecordedLocations(flpHighLocFile);
+        }
+
+        File flpLowLocFile = files.stream().filter(f -> f.getName().contains(Utils.TYPE_FLP_LOW)).findFirst().get();
+        if(flpLowLocFile.exists()) {
+            flpLowLocationList = readRecordedLocations(flpLowLocFile);
+        }
+
+        File lmLocFile = files.stream().filter(f -> f.getName().contains(Utils.TYPE_LM_GPS)).findFirst().get();
+        if(lmLocFile.exists()) {
+            lmLocationList = readRecordedLocations(lmLocFile);
+        }
+
+        // Die Timestamps für die Flags holen
+        String flpHighTimestampFilePattern = Utils.TYPE_FLP_HIGH + "_" + selectedRoute + ".timestamp.csv";
+        File flpHighTimestampFile = files.stream().filter(f -> f.getName().contains(flpHighTimestampFilePattern)).findFirst().get();
+        if(flpHighTimestampFile.exists()) {
+            flpHighFlagTimestampList = readRecordedTimestamps(flpHighTimestampFile);
+        }
+
+        String flpLowTimestampFilePattern = Utils.TYPE_FLP_LOW + "_" + selectedRoute + ".timestamp.csv";
+        File flpLowTimestampFile = files.stream().filter(f -> f.getName().contains(flpLowTimestampFilePattern)).findFirst().get();
+        if(flpLowTimestampFile.exists()) {
+            flpLowFlagTimestampList = readRecordedTimestamps(flpLowTimestampFile);
+        }
+
+        String lmTimestampFilePattern = Utils.TYPE_LM_GPS + "_" + selectedRoute + ".timestamp.csv";
+        File lmTimestampFile = files.stream().filter(f -> f.getName().contains(lmTimestampFilePattern)).findFirst().get();
+        if(lmTimestampFile.exists()) {
+            lmFlagTimestampList = readRecordedTimestamps(lmTimestampFile);
+        }
+    }
+
+    private List<Location> readRecordedLocations(File file) throws IOException {
+        CSVReader reader = new CSVReaderBuilder(new FileReader(file))
+                .withCSVParser(CSV_PARSER)
+                .withSkipLines(1)
+                .build();
+        List<String[]> entries = reader.readAll();
+
+        return entries.stream().map(e -> {
+            Location loc = new Location("RecordedLocation");
+            loc.setLatitude(Double.parseDouble(e[1]));
+            loc.setLongitude(Double.parseDouble(e[2]));
+            loc.setAltitude(Double.parseDouble(e[3]));
+            try {
+                loc.setTime(Utils.convertStringToDate(e[0]).getTime());
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+            }
+            return loc;
+        }).collect(Collectors.toList());
+    }
+
+    private List<Date> readRecordedTimestamps(File file) throws IOException {
+        CSVReader reader = new CSVReaderBuilder(new FileReader(file))
+                .withCSVParser(CSV_PARSER)
+                .build();
+
+        return reader.readAll().stream()
+            .filter(line -> line.length >= 1)
+            .map(line -> {
+                try {
+                    return Utils.convertStringToDate(line[0]);
+                } catch (ParseException e) {}
+                return null;
+            })
+            .filter(date -> date != null)
+            .collect(Collectors.toList());
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,5 +156,22 @@ public class StatisticsActivity extends AppCompatActivity {
         routeSelector = findViewById(R.id.routeSelector);
         cdfGraph = findViewById(R.id.cdfGraph);
         statusTextView = findViewById(R.id.statusTextView);
+
+        boolean doStatistics = false;
+        try {
+            readData();
+            doStatistics = true;
+        } catch (IOException ioe) {
+            statusTextView.setText("ERROR: Eine IO-Exception ist aufgetreten!");
+            Log.e(TAG, ioe.getMessage());
+        } catch (NumberFormatException nfe) {
+            statusTextView.setText("ERROR: Der Inhalt einer Datei ist inkompatibel!");
+        } catch (Exception e) {
+            statusTextView.setText("ERROR: " + e.getMessage());
+        }
+
+        if(doStatistics) {
+            statusTextView.setText("STATUS: Datenformat korrekt!");
+        }
     }
 }

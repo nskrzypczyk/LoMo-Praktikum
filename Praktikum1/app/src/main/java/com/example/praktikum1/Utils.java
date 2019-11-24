@@ -12,6 +12,7 @@ import org.apache.commons.collections.bag.SynchronizedSortedBag;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -22,6 +23,8 @@ public class Utils {
     public static final String TYPE_FLP_LOW="FLP_LOW";
     public static final String TYPE_LM_GPS="LM_GPS";
     private static String timeStamp;
+
+    public static final String TIMESTAMP_PATTERN = "dd.MM.YYYY-HH:mm:ss";
 
     /**
      * Gibt den custom Timestamp String der übergebenen Location zurück
@@ -46,6 +49,12 @@ public class Utils {
         sdf.setTimeZone(TimeZone.getTimeZone("CET"));
         String formattedDate = sdf.format(date);
         return formattedDate;
+    }
+
+    public static Date convertStringToDate(String dateString) throws ParseException {
+        SimpleDateFormat formatter = new SimpleDateFormat(TIMESTAMP_PATTERN);
+        formatter.setTimeZone(TimeZone.getTimeZone("CET"));
+        return formatter.parse(dateString);
     }
 
     public static void printToCSV(File file, String timeStamp, Location... loc){
