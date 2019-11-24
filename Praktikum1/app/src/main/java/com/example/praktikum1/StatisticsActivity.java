@@ -9,6 +9,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 import com.opencsv.CSVParser;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
@@ -21,10 +23,12 @@ import java.io.IOException;
 import java.io.Reader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.IllegalFormatException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -50,6 +54,28 @@ public class StatisticsActivity extends AppCompatActivity {
     private List<Date> flpHighFlagTimestampList;
     private List<Date> flpLowFlagTimestampList;
     private List<Date> lmFlagTimestampList;
+
+    private List<Location> interpolate(Location locationA, Location locationB, Date t1, Date t2) {
+        List<Location> interpolated = new ArrayList<>();
+
+        double dLat = locationB.getLatitude() - locationA.getLatitude();
+        double dLong = locationB.getLongitude() - locationA.getLongitude();
+        int step = Constants.INTERVAL;
+        long t21 = t2.getTime() - t1.getTime();
+        long t = t1.getTime() + step;
+
+        while(t < t2.getTime()) {
+            double dt = (t - t1.getTime()) / t21;
+            Location loc = new Location("interpolatedLocation");
+            loc.setLatitude(locationA.getLatitude() + dLat * dt);
+            loc.setLongitude(locationA.getLongitude() + dLong * dt);
+            interpolated.add(loc);
+
+            t = t + step;
+        }
+
+        return interpolated;
+    }
 
     private void readData() throws Exception {
         File outputDir = new File(Constants.OUTPUT_DIR);
@@ -171,8 +197,41 @@ public class StatisticsActivity extends AppCompatActivity {
             statusTextView.setText("ERROR: " + e.getMessage());
         }
 
+        // TODO: in GraphController auslagern
+        cdfGraph.getViewport().setMinY(0);
+        cdfGraph.getViewport().setMaxY(1);
+        cdfGraph.getViewport().setYAxisBoundsManual(true);
+
         if(doStatistics) {
             statusTextView.setText("STATUS: Datenformat korrekt!");
+
+            // TODO: Verallgemeinern und gegen Fehler absichern
+            List<Location> interpolated = interpolate(
+                    flagList.get(0),
+                    flagList.get(1),
+                    flpHighFlagTimestampList.get(0),
+                    flpHighFlagTimestampList.get(1));
+
+            List<Float> errorFlpHigh = new LinkedList<>();
+            for(int i = 0; i < interpolated.size(); i++) {
+                errorFlpHigh.add(interpolated.get(i).distanceTo(flpHighLocationList.get(i)));
+            }
+
+            Collections.sort(errorFlpHigh);
+
+            LineGraphSeries<DataPoint> flpHighSeries = new LineGraphSeries<>();
+            cdfGraph.addSeries(flpHighSeries);
+
+            cdfGraph.getViewport().setXAxisBoundsManual(true);
+            cdfGraph.getViewport().setMaxX(errorFlpHigh.get(errorFlpHigh.size()-1) + 2); // +2 für padding
+
+            // DataPoint(0,0) für Optik
+            flpHighSeries.appendData(new DataPoint(0, 0), false, 100);
+            // Datenpunkte einhängen
+            for(int i = 0; i < errorFlpHigh.size(); i++) {
+                Log.d(TAG, "X = " + errorFlpHigh.get(i) + " / Y = " + (double)(i+1) / errorFlpHigh.size());
+                flpHighSeries.appendData(new DataPoint(errorFlpHigh.get(i), (double)(i+1) / errorFlpHigh.size()), false, 100);
+            }
         }
     }
 }
