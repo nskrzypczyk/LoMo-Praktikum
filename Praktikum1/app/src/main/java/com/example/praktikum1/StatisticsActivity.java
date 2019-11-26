@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -48,6 +50,9 @@ public class StatisticsActivity extends AppCompatActivity {
 
     private final CSVParser CSV_PARSER = new CSVParserBuilder().withIgnoreQuotations(true).withSeparator(';').build();
 
+    // Die Route, welche dargestellt wird
+    private String route = "route1";
+
     // DATA
     private List<Location> flpHighLocationList;
     private List<Location> flpLowLocationList;
@@ -81,7 +86,7 @@ public class StatisticsActivity extends AppCompatActivity {
 
     private void readData() throws Exception {
         File outputDir = new File(Constants.OUTPUT_DIR);
-        String selectedRoute = "route1";
+        String selectedRoute = route;
 
         List<File> files = Arrays.stream(outputDir.list())
                 .filter(name -> name.contains(selectedRoute))
@@ -213,15 +218,7 @@ public class StatisticsActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_statistics);
-
-        routeSelector = findViewById(R.id.routeSelector);
-        cdfGraph = findViewById(R.id.cdfGraph);
-        statusTextView = findViewById(R.id.statusTextView);
-
+    private void loadDataAndDoStatistics() {
         boolean doStatistics = false;
         try {
             readData();
@@ -244,5 +241,30 @@ public class StatisticsActivity extends AppCompatActivity {
             doStatistics(Utils.TYPE_FLP_LOW, flpLowFlagTimestampList, flpLowLocationList);
             doStatistics(Utils.TYPE_LM_GPS, lmFlagTimestampList, lmLocationList);
         }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_statistics);
+
+        routeSelector = findViewById(R.id.routeSelector);
+        routeSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                route = parentView.getItemAtPosition(position).toString();
+                loadDataAndDoStatistics();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // Kommt nicht vor
+            }
+        });
+
+        cdfGraph = findViewById(R.id.cdfGraph);
+        statusTextView = findViewById(R.id.statusTextView);
+
+        loadDataAndDoStatistics();
     }
 }

@@ -8,7 +8,6 @@ import com.jjoe64.graphview.LegendRenderer;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-import java.util.Comparator;
 import java.util.stream.Stream;
 
 public class CdfGraphController {
@@ -17,6 +16,8 @@ public class CdfGraphController {
 
     public CdfGraphController(GraphView graph) {
         this.graph = graph;
+
+        this.reset();
 
         graph.setTitle("CDF-Graph");
 
@@ -74,5 +75,9 @@ public class CdfGraphController {
         }
 
         graph.getGridLabelRenderer().setNumHorizontalLabels(max);
+    }
+
+    private void reset() {
+        graph.getSeries().clear();
     }
 }
