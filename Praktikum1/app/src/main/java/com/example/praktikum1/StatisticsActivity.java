@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.example.praktikum1.graph.CdfGraphController;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -43,6 +44,7 @@ public class StatisticsActivity extends AppCompatActivity {
     private TextView statusTextView;
     // GraphView
     private GraphView cdfGraph;
+    private CdfGraphController graphController;
 
     private final CSVParser CSV_PARSER = new CSVParserBuilder().withIgnoreQuotations(true).withSeparator(';').build();
 
@@ -175,6 +177,42 @@ public class StatisticsActivity extends AppCompatActivity {
             .collect(Collectors.toList());
     }
 
+    private void doStatistics(String type, List<Date> flagTimestampList, List<Location> locationList) {
+        // Bevor die Rechnung gestartet werden kann
+        if(flagTimestampList == null || locationList == null) return;
+        if(flagTimestampList.size() < flagList.size()) return;
+
+        // offset wird benötigt, da in der gesamten Timestamp-Liste die bereits
+        // abgearbeiteten Timestamps berücksichtigt werden müssen
+        List<Float> errorFlpHigh = new LinkedList<>();
+        int offset = 0;
+        for(int j = 1; j < flagList.size(); j++) {
+            List<Location> interpolated = interpolate(
+                    flagList.get(j - 1),
+                    flagList.get(j),
+                    flagTimestampList.get(j - 1),
+                    flagTimestampList.get(j));
+
+            for(int i = 0; i < interpolated.size(); i++) {
+                if(i + offset < locationList.size()) {
+                    errorFlpHigh.add(interpolated.get(i).distanceTo(locationList.get(i + offset)));
+                }
+            }
+
+            offset += interpolated.size() - 1;
+        }
+
+        Collections.sort(errorFlpHigh);
+
+        // DataPoint(0,0) für Optik
+        graphController.appendData(type, new double[] {0.0, 0.0});
+        // Datenpunkte einhängen
+        for(int i = 0; i < errorFlpHigh.size(); i++) {
+            //Log.d(TAG, "X = " + errorFlpHigh.get(i) + " / Y = " + (double)(i+1) / errorFlpHigh.size());
+            graphController.appendData(type, new double[] {errorFlpHigh.get(i), (double)(i+1) / errorFlpHigh.size()});
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -197,50 +235,14 @@ public class StatisticsActivity extends AppCompatActivity {
             statusTextView.setText("ERROR: " + e.getMessage());
         }
 
-        // TODO: in GraphController auslagern
-        cdfGraph.getViewport().setMinY(0);
-        cdfGraph.getViewport().setMaxY(1);
-        cdfGraph.getViewport().setYAxisBoundsManual(true);
-
-        cdfGraph.getGridLabelRenderer().setPadding(40);
+        graphController = new CdfGraphController(cdfGraph);
 
         if(doStatistics) {
-            statusTextView.setText("STATUS: Datenformat korrekt!");
+            statusTextView.setText("");
 
-            // TODO: Verallgemeinern und gegen Fehler absichern
-            // Wird benötigt, da in der gesamten Timestamp-Liste die bereits
-            // abgearbeiteten Timestamps berücksichtigt werden müssen
-            List<Float> errorFlpHigh = new LinkedList<>();
-            int offset = 0;
-            for(int j = 1; j < flagList.size(); j++) {
-                List<Location> interpolated = interpolate(
-                        flagList.get(j - 1),
-                        flagList.get(j),
-                        flpHighFlagTimestampList.get(j - 1),
-                        flpHighFlagTimestampList.get(j));
-
-                for (int i = 0; i < interpolated.size(); i++) {
-                    errorFlpHigh.add(interpolated.get(i).distanceTo(flpHighLocationList.get(i + offset)));
-                }
-
-                offset += interpolated.size() - 1;
-            }
-
-            Collections.sort(errorFlpHigh);
-
-            LineGraphSeries<DataPoint> flpHighSeries = new LineGraphSeries<>();
-            cdfGraph.addSeries(flpHighSeries);
-
-            cdfGraph.getViewport().setXAxisBoundsManual(true);
-            cdfGraph.getViewport().setMaxX(errorFlpHigh.get(errorFlpHigh.size()-1) + 2); // +2 für padding
-
-            // DataPoint(0,0) für Optik
-            flpHighSeries.appendData(new DataPoint(0, 0), false, 100);
-            // Datenpunkte einhängen
-            for(int i = 0; i < errorFlpHigh.size(); i++) {
-                Log.d(TAG, "X = " + errorFlpHigh.get(i) + " / Y = " + (double)(i+1) / errorFlpHigh.size());
-                flpHighSeries.appendData(new DataPoint(errorFlpHigh.get(i), (double)(i+1) / errorFlpHigh.size()), false, 100);
-            }
+            doStatistics(Utils.TYPE_FLP_HIGH, flpHighFlagTimestampList, flpHighLocationList);
+            doStatistics(Utils.TYPE_FLP_LOW, flpLowFlagTimestampList, flpLowLocationList);
+            doStatistics(Utils.TYPE_LM_GPS, lmFlagTimestampList, lmLocationList);
         }
     }
 }
