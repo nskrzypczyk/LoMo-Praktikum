@@ -8,7 +8,10 @@ import android.util.Log;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.example.praktikum1.graph.CdfGraphController;
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 import com.opencsv.CSVParser;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
@@ -21,10 +24,12 @@ import java.io.IOException;
 import java.io.Reader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.IllegalFormatException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,6 +44,7 @@ public class StatisticsActivity extends AppCompatActivity {
     private TextView statusTextView;
     // GraphView
     private GraphView cdfGraph;
+    private CdfGraphController graphController;
 
     private final CSVParser CSV_PARSER = new CSVParserBuilder().withIgnoreQuotations(true).withSeparator(';').build();
 
@@ -50,6 +56,28 @@ public class StatisticsActivity extends AppCompatActivity {
     private List<Date> flpHighFlagTimestampList;
     private List<Date> flpLowFlagTimestampList;
     private List<Date> lmFlagTimestampList;
+
+    private List<Location> interpolate(Location locationA, Location locationB, Date t1, Date t2) {
+        List<Location> interpolated = new ArrayList<>();
+
+        double dLat = locationB.getLatitude() - locationA.getLatitude();
+        double dLong = locationB.getLongitude() - locationA.getLongitude();
+        int step = Constants.INTERVAL;
+        long t21 = t2.getTime() - t1.getTime();
+        long t = t1.getTime() + step;
+
+        while(t < t2.getTime()) {
+            double dt = (t - t1.getTime()) / t21;
+            Location loc = new Location("interpolatedLocation");
+            loc.setLatitude(locationA.getLatitude() + dLat * dt);
+            loc.setLongitude(locationA.getLongitude() + dLong * dt);
+            interpolated.add(loc);
+
+            t = t + step;
+        }
+
+        return interpolated;
+    }
 
     private void readData() throws Exception {
         File outputDir = new File(Constants.OUTPUT_DIR);
@@ -149,6 +177,42 @@ public class StatisticsActivity extends AppCompatActivity {
             .collect(Collectors.toList());
     }
 
+    private void doStatistics(String type, List<Date> flagTimestampList, List<Location> locationList) {
+        // Bevor die Rechnung gestartet werden kann
+        if(flagTimestampList == null || locationList == null) return;
+        if(flagTimestampList.size() < flagList.size()) return;
+
+        // offset wird benötigt, da in der gesamten Timestamp-Liste die bereits
+        // abgearbeiteten Timestamps berücksichtigt werden müssen
+        List<Float> errorFlpHigh = new LinkedList<>();
+        int offset = 0;
+        for(int j = 1; j < flagList.size(); j++) {
+            List<Location> interpolated = interpolate(
+                    flagList.get(j - 1),
+                    flagList.get(j),
+                    flagTimestampList.get(j - 1),
+                    flagTimestampList.get(j));
+
+            for(int i = 0; i < interpolated.size(); i++) {
+                if(i + offset < locationList.size()) {
+                    errorFlpHigh.add(interpolated.get(i).distanceTo(locationList.get(i + offset)));
+                }
+            }
+
+            offset += interpolated.size() - 1;
+        }
+
+        Collections.sort(errorFlpHigh);
+
+        // DataPoint(0,0) für Optik
+        graphController.appendData(type, new double[] {0.0, 0.0});
+        // Datenpunkte einhängen
+        for(int i = 0; i < errorFlpHigh.size(); i++) {
+            //Log.d(TAG, "X = " + errorFlpHigh.get(i) + " / Y = " + (double)(i+1) / errorFlpHigh.size());
+            graphController.appendData(type, new double[] {errorFlpHigh.get(i), (double)(i+1) / errorFlpHigh.size()});
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -171,8 +235,14 @@ public class StatisticsActivity extends AppCompatActivity {
             statusTextView.setText("ERROR: " + e.getMessage());
         }
 
+        graphController = new CdfGraphController(cdfGraph);
+
         if(doStatistics) {
-            statusTextView.setText("STATUS: Datenformat korrekt!");
+            statusTextView.setText("");
+
+            doStatistics(Utils.TYPE_FLP_HIGH, flpHighFlagTimestampList, flpHighLocationList);
+            doStatistics(Utils.TYPE_FLP_LOW, flpLowFlagTimestampList, flpLowLocationList);
+            doStatistics(Utils.TYPE_LM_GPS, lmFlagTimestampList, lmLocationList);
         }
     }
 }
