@@ -20,4 +20,7 @@
 
     <string name="server_address">http://localhost:80</string>
     <string name="title_activity_maps">Map</string>
+    <string name="FLP_HIGH">FLP_HIGH</string>
+    <string name="FLP_LOW">FLP_LOW_POWER</string>
+    <string name="LM_GPS">LM_GPS</string>
 </resources>

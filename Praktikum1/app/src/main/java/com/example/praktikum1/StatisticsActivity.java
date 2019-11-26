@@ -7,10 +7,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.praktikum1.graph.CdfGraphController;
+import com.example.praktikum1.statistics.TraitTable;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -42,6 +44,7 @@ public class StatisticsActivity extends AppCompatActivity {
     private static String TAG = "STAT";
 
     // GUI-ELEMENTS
+    private LinearLayout rootLayout;
     private Spinner routeSelector;
     private TextView statusTextView;
     // GraphView
@@ -262,9 +265,15 @@ public class StatisticsActivity extends AppCompatActivity {
             }
         });
 
+        rootLayout = findViewById(R.id.rootLayout);
         cdfGraph = findViewById(R.id.cdfGraph);
         statusTextView = findViewById(R.id.statusTextView);
 
         loadDataAndDoStatistics();
+
+        TraitTable tt = new TraitTable(getApplicationContext(), rootLayout, "TEST TEST");
+        tt.setContent(new String[] {
+                "Wert 1", "Wert 2", "Wert 3"
+        });
     }
 }
