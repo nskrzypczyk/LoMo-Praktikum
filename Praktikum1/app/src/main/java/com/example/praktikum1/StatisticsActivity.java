@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.IllegalFormatException;
 import java.util.LinkedList;
@@ -64,6 +65,10 @@ public class StatisticsActivity extends AppCompatActivity {
     private List<Date> flpHighFlagTimestampList;
     private List<Date> flpLowFlagTimestampList;
     private List<Date> lmFlagTimestampList;
+
+    private List<Float> flpHighErrorList;
+    private List<Float> flpLowErrorList;
+    private List<Float> lmErrorList;
 
     private List<Location> interpolate(Location locationA, Location locationB, Date t1, Date t2) {
         List<Location> interpolated = new ArrayList<>();
@@ -185,10 +190,10 @@ public class StatisticsActivity extends AppCompatActivity {
             .collect(Collectors.toList());
     }
 
-    private void doStatistics(String type, List<Date> flagTimestampList, List<Location> locationList) {
+    private List<Float> doStatistics(String type, List<Date> flagTimestampList, List<Location> locationList) {
         // Bevor die Rechnung gestartet werden kann
-        if(flagTimestampList == null || locationList == null) return;
-        if(flagTimestampList.size() < flagList.size()) return;
+        if(flagTimestampList == null || locationList == null) return null;
+        if(flagTimestampList.size() < flagList.size()) return null;
 
         // offset wird benötigt, da in der gesamten Timestamp-Liste die bereits
         // abgearbeiteten Timestamps berücksichtigt werden müssen
@@ -219,6 +224,8 @@ public class StatisticsActivity extends AppCompatActivity {
             //Log.d(TAG, "X = " + errorFlpHigh.get(i) + " / Y = " + (double)(i+1) / errorFlpHigh.size());
             graphController.appendData(type, new double[] {errorFlpHigh.get(i), (double)(i+1) / errorFlpHigh.size()});
         }
+
+        return errorFlpHigh;
     }
 
     private void loadDataAndDoStatistics() {
@@ -240,9 +247,9 @@ public class StatisticsActivity extends AppCompatActivity {
         if(doStatistics) {
             statusTextView.setText("");
 
-            doStatistics(Utils.TYPE_FLP_HIGH, flpHighFlagTimestampList, flpHighLocationList);
-            doStatistics(Utils.TYPE_FLP_LOW, flpLowFlagTimestampList, flpLowLocationList);
-            doStatistics(Utils.TYPE_LM_GPS, lmFlagTimestampList, lmLocationList);
+            flpHighErrorList = doStatistics(Utils.TYPE_FLP_HIGH, flpHighFlagTimestampList, flpHighLocationList);
+            flpLowErrorList = doStatistics(Utils.TYPE_FLP_LOW, flpLowFlagTimestampList, flpLowLocationList);
+            lmErrorList = doStatistics(Utils.TYPE_LM_GPS, lmFlagTimestampList, lmLocationList);
         }
     }
 
@@ -271,9 +278,49 @@ public class StatisticsActivity extends AppCompatActivity {
 
         loadDataAndDoStatistics();
 
-        TraitTable tt = new TraitTable(getApplicationContext(), rootLayout, "TEST TEST");
+
+        // Weitere Statistische Kenngrößen
+        // TODO: in eine Dataset-Klasse auslagern ?
+
+        // Range
+        double flpHighRange = flpHighErrorList.stream().max(Comparator.naturalOrder()).get()
+                - flpHighErrorList.stream().min(Comparator.naturalOrder()).get();
+
+        flpHighRange = Math.round(flpHighRange * 1000) / 1000.0;
+
+        TraitTable tt = new TraitTable(getApplicationContext(), rootLayout, "Spannweite / range");
         tt.setContent(new String[] {
-                "Wert 1", "Wert 2", "Wert 3"
+                flpHighRange + "m", "", ""
+        });
+
+        // Aritmethisches Mittel
+        double flpMean = 0;
+        for(float error : flpHighErrorList) {
+            flpMean += error;
+        }
+        flpMean /= flpHighErrorList.size();
+        flpMean = Math.round(flpMean * 1000) / 1000.0;
+
+        TraitTable ttMean = new TraitTable(getApplicationContext(), rootLayout, "Arithm. Mittel / mean");
+        ttMean.setContent(new String[] {
+                flpMean + "m", "", ""
+        });
+
+        // median
+        double flpMedian = 0;
+        if(flpHighErrorList.size() % 2 != 0) {
+            flpMedian = flpHighErrorList.get(flpHighErrorList.size() / 2 + 1);
+        }
+        else {
+            flpMedian = (flpHighErrorList.get(flpHighErrorList.size() / 2)
+                    + flpHighErrorList.get(flpHighErrorList.size() / 2 + 1)) / 2.0;
+        }
+
+        flpMedian = Math.round(flpMedian * 1000) / 1000.0;
+
+        TraitTable ttMedian = new TraitTable(getApplicationContext(), rootLayout, "Median");
+        ttMedian.setContent(new String[] {
+                flpMedian + "m", "", ""
         });
     }
 }
