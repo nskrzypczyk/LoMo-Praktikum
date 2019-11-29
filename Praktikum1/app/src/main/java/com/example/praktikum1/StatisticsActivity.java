@@ -92,7 +92,20 @@ public class StatisticsActivity extends AppCompatActivity {
         return interpolated;
     }
 
+    private void clearData() {
+        flpHighLocationList.clear();
+        flpHighFlagTimestampList.clear();
+        flpLowLocationList.clear();
+        flpLowFlagTimestampList.clear();
+        lmLocationList.clear();
+        lmFlagTimestampList.clear();
+    }
+
     private void readData() throws Exception {
+        // Vor dem Lesen alle Datenlisten leeren, damit es nicht zu falschen
+        // Berechnungen kommt, wenn bei einer Route z.B. Daten fehlen
+        clearData();
+        // LESEN
         File outputDir = new File(Constants.OUTPUT_DIR);
         String selectedRoute = route;
 
@@ -229,6 +242,8 @@ public class StatisticsActivity extends AppCompatActivity {
     }
 
     private void loadDataAndDoStatistics() {
+        graphController = new CdfGraphController(cdfGraph);
+
         boolean doStatistics = false;
         try {
             readData();
@@ -241,8 +256,6 @@ public class StatisticsActivity extends AppCompatActivity {
         } catch (Exception e) {
             statusTextView.setText("ERROR: " + e.getMessage());
         }
-
-        graphController = new CdfGraphController(cdfGraph);
 
         if(doStatistics) {
             statusTextView.setText("");
@@ -258,6 +271,17 @@ public class StatisticsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_statistics);
 
+        flpHighLocationList = new ArrayList<>();
+        flpHighFlagTimestampList = new ArrayList<>();
+        flpLowLocationList = new ArrayList<>();
+        flpLowFlagTimestampList = new ArrayList<>();
+        lmLocationList = new ArrayList<>();
+        lmFlagTimestampList = new ArrayList<>();
+
+        rootLayout = findViewById(R.id.rootLayout);
+        cdfGraph = findViewById(R.id.cdfGraph);
+        statusTextView = findViewById(R.id.statusTextView);
+
         routeSelector = findViewById(R.id.routeSelector);
         routeSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -272,55 +296,51 @@ public class StatisticsActivity extends AppCompatActivity {
             }
         });
 
-        rootLayout = findViewById(R.id.rootLayout);
-        cdfGraph = findViewById(R.id.cdfGraph);
-        statusTextView = findViewById(R.id.statusTextView);
-
-        loadDataAndDoStatistics();
+        //loadDataAndDoStatistics();
 
 
         // Weitere Statistische Kenngrößen
         // TODO: in eine Dataset-Klasse auslagern ?
 
         // Range
-        double flpHighRange = flpHighErrorList.stream().max(Comparator.naturalOrder()).get()
-                - flpHighErrorList.stream().min(Comparator.naturalOrder()).get();
-
-        flpHighRange = Math.round(flpHighRange * 1000) / 1000.0;
-
-        TraitTable tt = new TraitTable(getApplicationContext(), rootLayout, "Spannweite / range");
-        tt.setContent(new String[] {
-                flpHighRange + "m", "", ""
-        });
-
-        // Aritmethisches Mittel
-        double flpMean = 0;
-        for(float error : flpHighErrorList) {
-            flpMean += error;
-        }
-        flpMean /= flpHighErrorList.size();
-        flpMean = Math.round(flpMean * 1000) / 1000.0;
-
-        TraitTable ttMean = new TraitTable(getApplicationContext(), rootLayout, "Arithm. Mittel / mean");
-        ttMean.setContent(new String[] {
-                flpMean + "m", "", ""
-        });
-
-        // median
-        double flpMedian = 0;
-        if(flpHighErrorList.size() % 2 != 0) {
-            flpMedian = flpHighErrorList.get(flpHighErrorList.size() / 2 + 1);
-        }
-        else {
-            flpMedian = (flpHighErrorList.get(flpHighErrorList.size() / 2)
-                    + flpHighErrorList.get(flpHighErrorList.size() / 2 + 1)) / 2.0;
-        }
-
-        flpMedian = Math.round(flpMedian * 1000) / 1000.0;
-
-        TraitTable ttMedian = new TraitTable(getApplicationContext(), rootLayout, "Median");
-        ttMedian.setContent(new String[] {
-                flpMedian + "m", "", ""
-        });
+//        double flpHighRange = flpHighErrorList.stream().max(Comparator.naturalOrder()).get()
+//                - flpHighErrorList.stream().min(Comparator.naturalOrder()).get();
+//
+//        flpHighRange = Math.round(flpHighRange * 1000) / 1000.0;
+//
+//        TraitTable tt = new TraitTable(getApplicationContext(), rootLayout, "Spannweite / range");
+//        tt.setContent(new String[] {
+//                flpHighRange + "m", "", ""
+//        });
+//
+//        // Aritmethisches Mittel
+//        double flpMean = 0;
+//        for(float error : flpHighErrorList) {
+//            flpMean += error;
+//        }
+//        flpMean /= flpHighErrorList.size();
+//        flpMean = Math.round(flpMean * 1000) / 1000.0;
+//
+//        TraitTable ttMean = new TraitTable(getApplicationContext(), rootLayout, "Arithm. Mittel / mean");
+//        ttMean.setContent(new String[] {
+//                flpMean + "m", "", ""
+//        });
+//
+//        // median
+//        double flpMedian = 0;
+//        if(flpHighErrorList.size() % 2 != 0) {
+//            flpMedian = flpHighErrorList.get(flpHighErrorList.size() / 2 + 1);
+//        }
+//        else {
+//            flpMedian = (flpHighErrorList.get(flpHighErrorList.size() / 2)
+//                    + flpHighErrorList.get(flpHighErrorList.size() / 2 + 1)) / 2.0;
+//        }
+//
+//        flpMedian = Math.round(flpMedian * 1000) / 1000.0;
+//
+//        TraitTable ttMedian = new TraitTable(getApplicationContext(), rootLayout, "Median");
+//        ttMedian.setContent(new String[] {
+//                flpMedian + "m", "", ""
+//        });
     }
 }
