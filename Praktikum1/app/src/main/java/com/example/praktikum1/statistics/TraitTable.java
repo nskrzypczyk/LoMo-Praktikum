@@ -14,6 +14,9 @@ import com.example.praktikum1.Utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class TraitTable {
 
     private TableLayout table;
@@ -23,6 +26,9 @@ public class TraitTable {
 
     private List<String> labels;
     private List<TextView> valueTextViews = new ArrayList<>();
+
+    @Getter @Setter
+    private String suffix = "m";
 
     public TraitTable(Context context, ViewGroup parent, String titleContent) {
 
@@ -84,6 +90,9 @@ public class TraitTable {
     public void setContent(String[] content) {
         for(int i = 0; i < valueTextViews.size(); i++) {
             valueTextViews.get(i).setText(content[i]);
+            if(!content[i].isEmpty()) {
+                valueTextViews.get(i).append(suffix);
+            }
         }
     }
 }

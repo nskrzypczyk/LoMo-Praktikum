@@ -12,6 +12,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.praktikum1.graph.CdfGraphController;
+import com.example.praktikum1.statistics.DataList;
+import com.example.praktikum1.statistics.DoubleToString;
 import com.example.praktikum1.statistics.TraitTable;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
@@ -37,6 +39,7 @@ import java.util.IllegalFormatException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -66,9 +69,11 @@ public class StatisticsActivity extends AppCompatActivity {
     private List<Date> flpLowFlagTimestampList;
     private List<Date> lmFlagTimestampList;
 
-    private List<Float> flpHighErrorList;
-    private List<Float> flpLowErrorList;
-    private List<Float> lmErrorList;
+    private DataList flpHighErrorList;
+    private DataList flpLowErrorList;
+    private DataList lmErrorList;
+
+    private TraitTable ttMedian;
 
     private List<Location> interpolate(Location locationA, Location locationB, Date t1, Date t2) {
         List<Location> interpolated = new ArrayList<>();
@@ -99,6 +104,10 @@ public class StatisticsActivity extends AppCompatActivity {
         flpLowFlagTimestampList.clear();
         lmLocationList.clear();
         lmFlagTimestampList.clear();
+
+        flpHighErrorList.clear();
+        flpLowErrorList.clear();
+        lmErrorList.clear();
     }
 
     private void readData() throws Exception {
@@ -203,14 +212,14 @@ public class StatisticsActivity extends AppCompatActivity {
             .collect(Collectors.toList());
     }
 
-    private List<Float> doStatistics(String type, List<Date> flagTimestampList, List<Location> locationList) {
+    private DataList doStatistics(String type, List<Date> flagTimestampList, List<Location> locationList) {
         // Bevor die Rechnung gestartet werden kann
-        if(flagTimestampList == null || locationList == null) return null;
-        if(flagTimestampList.size() < flagList.size()) return null;
+        if(flagTimestampList == null || locationList == null) return new DataList();
+        if(flagTimestampList.size() < flagList.size()) return new DataList();
 
         // offset wird benötigt, da in der gesamten Timestamp-Liste die bereits
         // abgearbeiteten Timestamps berücksichtigt werden müssen
-        List<Float> errorFlpHigh = new LinkedList<>();
+        DataList errorFlpHigh = new DataList();
         int offset = 0;
         for(int j = 1; j < flagList.size(); j++) {
             List<Location> interpolated = interpolate(
@@ -266,6 +275,19 @@ public class StatisticsActivity extends AppCompatActivity {
         }
     }
 
+    private void updateUI() {
+        BiFunction<Double, Integer, Double> round = Utils::round;
+        int digits = 3;
+        // Gibt den Double-Wert als String zurück, oder den leeren String (bei d == -1.0)
+        DoubleToString double2str = d -> d == -1.0 ? "" : "" + d;
+
+        ttMedian.setContent(new String[] {
+            double2str.convert(round.apply(flpHighErrorList.median(), digits)),
+            double2str.convert(round.apply(flpLowErrorList.median(), digits)),
+            double2str.convert(round.apply(lmErrorList.median(), digits))
+        });
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -278,9 +300,16 @@ public class StatisticsActivity extends AppCompatActivity {
         lmLocationList = new ArrayList<>();
         lmFlagTimestampList = new ArrayList<>();
 
+        flpHighErrorList = new DataList();
+        flpLowErrorList = new DataList();
+        lmErrorList = new DataList();
+
         rootLayout = findViewById(R.id.rootLayout);
         cdfGraph = findViewById(R.id.cdfGraph);
         statusTextView = findViewById(R.id.statusTextView);
+
+        // Tabellen für die einzelnen Eigenschaften erstellen
+        ttMedian = new TraitTable(getApplicationContext(), rootLayout, "Median");
 
         routeSelector = findViewById(R.id.routeSelector);
         routeSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -288,6 +317,7 @@ public class StatisticsActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 route = parentView.getItemAtPosition(position).toString();
                 loadDataAndDoStatistics();
+                updateUI();
             }
 
             @Override

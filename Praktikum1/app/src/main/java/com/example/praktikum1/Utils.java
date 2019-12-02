@@ -154,4 +154,8 @@ public class Utils {
         } catch (Exception e) {
         }
     }
+
+    public static double round(double number, int digits) {
+        return Math.round(number * Math.pow(10, digits)) / Math.pow(10, digits);
+    }
 }
