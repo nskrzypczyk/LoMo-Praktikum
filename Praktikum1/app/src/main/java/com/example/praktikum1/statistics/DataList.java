@@ -44,4 +44,18 @@ public class DataList extends ArrayList<Float> {
 
         return super.get(index);
     }
+
+    public double stdError() {
+        if(super.isEmpty()) return -1;
+
+        double mean = mean();
+
+        double var = 0;
+        for(float x : this) {
+            var += Math.pow(x - mean, 2);
+        }
+        var /= super.size() - 1;
+
+        return Math.sqrt(var);
+    }
 }
