@@ -73,14 +73,14 @@ public class StatisticsActivity extends AppCompatActivity {
     private DataList flpLowErrorList;
     private DataList lmErrorList;
 
-    private TraitTable ttMedian;
+    private TraitTable ttMedian, ttPercentil95;
 
     private List<Location> interpolate(Location locationA, Location locationB, Date t1, Date t2) {
         List<Location> interpolated = new ArrayList<>();
 
         double dLat = locationB.getLatitude() - locationA.getLatitude();
         double dLong = locationB.getLongitude() - locationA.getLongitude();
-        int step = Constants.INTERVAL;
+        long step = Prak2.INTERVAL;
         long t21 = t2.getTime() - t1.getTime();
         long t = t1.getTime() + step;
 
@@ -228,6 +228,8 @@ public class StatisticsActivity extends AppCompatActivity {
                     flagTimestampList.get(j - 1),
                     flagTimestampList.get(j));
 
+            //Log.d(TAG, "Interpolated: " + interpolated.size());
+
             for(int i = 0; i < interpolated.size(); i++) {
                 if(i + offset < locationList.size()) {
                     errorFlpHigh.add(interpolated.get(i).distanceTo(locationList.get(i + offset)));
@@ -286,6 +288,14 @@ public class StatisticsActivity extends AppCompatActivity {
             double2str.convert(round.apply(flpLowErrorList.median(), digits)),
             double2str.convert(round.apply(lmErrorList.median(), digits))
         });
+
+        ttPercentil95.setContent(new String[] {
+            double2str.convert(round.apply(flpHighErrorList.percentile(95), digits)),
+            double2str.convert(round.apply(flpLowErrorList.percentile(95), digits)),
+            double2str.convert(round.apply(lmErrorList.percentile(95), digits))
+        });
+
+        Log.d(TAG, flpHighErrorList.toString() + " // " + flpHighErrorList.size());
     }
 
     @Override
@@ -310,6 +320,7 @@ public class StatisticsActivity extends AppCompatActivity {
 
         // Tabellen für die einzelnen Eigenschaften erstellen
         ttMedian = new TraitTable(getApplicationContext(), rootLayout, "Median");
+        ttPercentil95 = new TraitTable(getApplicationContext(), rootLayout, "Fehler Konfidenz-Level 95%");
 
         routeSelector = findViewById(R.id.routeSelector);
         routeSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
