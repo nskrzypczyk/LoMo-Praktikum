@@ -6,4 +6,20 @@
     android:name="com.google.android.gms.maps.SupportMapFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MapsActivityP2" />
+    tools:context=".MapsActivityP2" >
+
+    <TextView
+        android:id="@+id/lblInfoP2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|top"
+        android:layout_marginTop="5dp"
+        android:fontFamily="monospace"
+        android:text="Groundtruth =>Schwarz\nFLP_HIGH =>Rot\nFLP_LOW =>Blau\nLM_GPS=>Grün"
+        android:textColor="#000000"
+        android:textSize="12sp"
+        android:visibility="visible"></TextView>
+
+
+
+</fragment>
