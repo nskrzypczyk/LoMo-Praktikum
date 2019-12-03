@@ -66,7 +66,7 @@ public class Prak2 extends Activity implements
     private boolean isActive = false;
     private Spinner spRoutes, spProvider;
     private TextView tvLat, tvLong, tvAlt, tvTimestamp;
-    private Button btnStart, btnTimestamp;
+    private Button btnStart, btnTimestamp, btnMaps;
 
 
     public static String chosenRoute;
@@ -229,6 +229,7 @@ public class Prak2 extends Activity implements
         this.tvTimestamp = this.findViewById(R.id.tvTimestamp);
         this.btnStart = this.findViewById(R.id.btnStart);
         this.btnTimestamp = this.findViewById(R.id.btnTimestamp);
+        this.btnMaps = this.findViewById(R.id.btnMaps);
         selectedLocManager = false;
         chosenProvider = spProvider.getSelectedItem().toString();
     }
@@ -282,6 +283,9 @@ public class Prak2 extends Activity implements
                 Utils.printToCSV(timestampFile,Utils.getTimeStampNow());
             }
         });
+        btnMaps.setOnClickListener(e->{
+            Intent intent = new Intent(this, MapsActivityP2.class);
+            startActivity(intent);        });
 
     }
 
