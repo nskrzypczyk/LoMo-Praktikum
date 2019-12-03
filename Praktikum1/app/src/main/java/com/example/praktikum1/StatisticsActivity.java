@@ -73,7 +73,7 @@ public class StatisticsActivity extends AppCompatActivity {
     private DataList flpLowErrorList;
     private DataList lmErrorList;
 
-    private TraitTable ttMedian, ttPercentil95;
+    private TraitTable ttMedian, ttPercentil95, ttMean;
 
     private List<Location> interpolate(Location locationA, Location locationB, Date t1, Date t2) {
         List<Location> interpolated = new ArrayList<>();
@@ -295,6 +295,12 @@ public class StatisticsActivity extends AppCompatActivity {
             double2str.convert(round.apply(lmErrorList.percentile(95), digits))
         });
 
+        ttMean.setContent(new String[] {
+            double2str.convert(round.apply(flpHighErrorList.mean(), digits)),
+            double2str.convert(round.apply(flpLowErrorList.mean(), digits)),
+            double2str.convert(round.apply(lmErrorList.mean(), digits))
+        });
+
         Log.d(TAG, flpHighErrorList.toString() + " // " + flpHighErrorList.size());
     }
 
@@ -321,6 +327,7 @@ public class StatisticsActivity extends AppCompatActivity {
         // Tabellen für die einzelnen Eigenschaften erstellen
         ttMedian = new TraitTable(getApplicationContext(), rootLayout, "Median");
         ttPercentil95 = new TraitTable(getApplicationContext(), rootLayout, "Fehler Konfidenz-Level 95%");
+        ttMean = new TraitTable(getApplicationContext(), rootLayout, "Arithm. Mittel");
 
         routeSelector = findViewById(R.id.routeSelector);
         routeSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {

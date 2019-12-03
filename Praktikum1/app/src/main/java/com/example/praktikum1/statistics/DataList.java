@@ -5,6 +5,18 @@ import java.util.ArrayList;
 
 public class DataList extends ArrayList<Float> {
 
+    public double mean() {
+        if(super.isEmpty()) return -1;
+
+        double mean = 0;
+        for(float error : this) {
+            mean += error;
+        }
+        mean /= super.size();
+
+        return mean;
+    }
+
     public double median() {
         if(super.isEmpty()) return -1;
 
