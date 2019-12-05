@@ -57,20 +57,44 @@ Zur Überprüfung der einzelnen Verfahren wurden zwei Routen definiert (Abbildun
 \section{Auswertung}	
 
 \renewcommand{\arraystretch}{1.2}
-\begin{tabular}{|l|l|l|l|}
-\hline
-Fehler & FLP\_HIGH & FLP\_LOW & LM\_GPS \\
-\hline
-\multicolumn{4}{|c|}{\textit{Lagemaße}}\\
-\hline
-Median & $0,00$ & $0,00$ & $0,00$ \\
-Konfidenzlevel 95\% & $0,00$ & $0,00$ & $0,00$ \\
-Arith. Mittel & $0,00$ & $0,00$ & $0,00$ \\
-\hline
-\multicolumn{4}{|c|}{\textit{Streumaße}}\\
-\hline
-Standardabweichung & $0,00$ & $0,00$ & $0,00$ \\
-\hline
-\end{tabular}
+\begin{table}
+	\centering
+	\caption{Ergebnisse Route 1 -- Outdoors (Abbildung \ref{fig:route1})}
+	\begin{tabular}{|l|l|l|l|}
+	\hline
+	Fehler (in Meter) & FLP\_HIGH & FLP\_LOW & LM\_GPS \\
+	\hline
+	\multicolumn{4}{|c|}{\textit{Lagemaße}}\\
+	\hline
+	Median & $38,593$ & $38,22$ & $74,939$ \\
+	Konfidenzlevel 95\% & $120,746$ & $122,055$ & $151,976$ \\
+	Arithm. Mittel & $49,431$ & $49,635$ & $84,736$ \\
+	\hline
+	\multicolumn{4}{|c|}{\textit{Streumaße}}\\
+	\hline
+	Standardabweichung & $40,274$ & $39,809$ & $45,163$ \\
+	\hline
+	\end{tabular}
+\end{table}
+
+\begin{table}
+	\centering
+	\caption{Ergebnisse Route 2 -- Indoors (Abbildung \ref{fig:route2})}
+	\begin{tabular}{|l|l|l|l|}
+	\hline
+	Fehler (in Meter) & FLP\_HIGH & FLP\_LOW & LM\_GPS \\
+	\hline
+	\multicolumn{4}{|c|}{\textit{Lagemaße}}\\
+	\hline
+	Median & $23,459$ & $26,111$ & $149,883$ \\
+	Konfidenzlevel 95\% & $61,455$ & $69,472$ & $200,939$ \\
+	Arithm. Mittel & $27,788$ & $29,8$ & $105,941$ \\
+	\hline
+	\multicolumn{4}{|c|}{\textit{Streumaße}}\\
+	\hline
+	Standardabweichung & $18,721$ & $21,96$ & $77,317$ \\
+	\hline
+	\end{tabular}
+\end{table}
 	
 \end{document}
