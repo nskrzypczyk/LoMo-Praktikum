@@ -212,10 +212,39 @@ public class StatisticsActivity extends AppCompatActivity {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Teilweise werden Locations doppelt geloggt. Liegt wohl daran,
+     * dass das Betriebssystem entscheidet, wann es welche Positionierung gibt.
+     * Daher weren einfach die Locations, die denselben Timestamp haben rausgeworfen,
+     * da es lediglich alle 3 Sekunden updates geben sollte.
+     */
+    private void cleanLocationLists() {
+        cleanLocationList(flpHighLocationList);
+        cleanLocationList(flpLowLocationList);
+        cleanLocationList(lmLocationList);
+    }
+
+    private void cleanLocationList(List<Location> list) {
+        List<Location> cleanedList = new ArrayList<>();
+        Location lastLoc = list.get(0);
+        for(int i = 1; i < list.size(); i++) {
+            if(lastLoc.getTime() != list.get(i).getTime()) {
+                cleanedList.add(list.get(i));
+            }
+            lastLoc = list.get(i);
+        }
+
+        // Zu guter letzt überschreiben
+        list = cleanedList;
+    }
+
     private DataList doStatistics(String type, List<Date> flagTimestampList, List<Location> locationList) {
         // Bevor die Rechnung gestartet werden kann
         if(flagTimestampList == null || locationList == null) return new DataList();
         if(flagTimestampList.size() < flagList.size()) return new DataList();
+
+        // Und Daten bereinigen
+        cleanLocationLists();
 
         // offset wird benötigt, da in der gesamten Timestamp-Liste die bereits
         // abgearbeiteten Timestamps berücksichtigt werden müssen
@@ -228,7 +257,7 @@ public class StatisticsActivity extends AppCompatActivity {
                     flagTimestampList.get(j - 1),
                     flagTimestampList.get(j));
 
-            //Log.d(TAG, "Interpolated: " + interpolated.size());
+            Log.d(TAG, "Interpolated: " + interpolated.size());
 
             for(int i = 0; i < interpolated.size(); i++) {
                 if(i + offset < locationList.size()) {
@@ -238,6 +267,8 @@ public class StatisticsActivity extends AppCompatActivity {
 
             offset += interpolated.size() - 1;
         }
+
+        Log.d(TAG, "Interpolated: " + locationList.size());
 
         Collections.sort(errorFlpHigh);
 

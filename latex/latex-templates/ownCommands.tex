@@ -1,0 +1,18 @@
+
+\newcommand{\doctitle}[1]{\begin{center}\begin{huge}#1\end{huge}\end{center}}
+
+% 1. Variante des docheader (ohne Parameter)
+% dann wird der Autor unter der Überschrift ausgegeben
+\newcommand{\docheader}{\doctitle{\thetitle}\begin{center}\theauthor\end{center}\hrule\vspace{1em}}
+
+% 2. Variante des docheader (mit Parameter)
+% was im Parameter steht wird unter der Überschrift ausgeben
+\newcommand{\docheaderparam}[1]{\doctitle{\thetitle}\begin{center}#1\end{center}\hrule\vspace{1em}}
+
+\newcommand{\timbox}[1]{\begin{center}\fbox{\begin{minipage}[t]{0.8\textwidth}#1\end{minipage}}\end{center}}
+
+\newcommand{\code}[1]{\texttt{#1}}
+
+% Für Multiple Choice
+\newcommand{\choice}{\item[\Square]}
+\newcommand{\cchoice}{\item[\CheckedBox]} % cc = correc choice

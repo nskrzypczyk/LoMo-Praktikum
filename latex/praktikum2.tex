@@ -1,0 +1,76 @@
+\input{latex-templates/head.tex}
+
+% Metainformationen
+\title{Evaluation -- Praktikum 2}
+\author{Die Lokalisatoren}
+
+\ihead{}
+\chead{}
+\ohead{}
+\ifoot{}
+\cfoot{\pagemark}
+\ofoot{}
+
+\input{latex-templates/ownCommands.tex}
+
+\setlength{\parskip}{0em}
+\setlength{\parindent}{0em}
+\renewcommand{\baselinestretch}{1.15}
+
+\begin{document}
+
+\docheader
+
+\section{Wie und wo wir messen}
+
+Auf jede Route werden drei verschiedene Verfahren angewandt: 
+\begin{itemize}
+	\item FusedLocationProvider - \code{PRIORITY\_HIGH\_ACCURACY} (nachfolgend "`FLP\_HIGH"' genannt)
+	\item FusedLocationProvider - \code{PRIORITY\_LOW\_POWER} (nachfolgend "`FLP\_LOW"' genannt)
+	\item LocationManager - \code{GPS\_PROVIDER} (nachfolgend "`LM\_GPS"' genannt)
+\end{itemize}
+
+Dabei entschieden wir uns für FLP\_HIGH, um die genaueste Positionierung zu erhalten. FLP\_LOW verzichte größtenteils auf GPS- und Wi-Fi-Signale und ermittle die Position über Cell Tower (laut Google). LM\_GPS wurde von uns ausgewählt, um die Genauigkeit von GPS zu der höchstmöglichen Genauigkeit und "`Cell Tower-Genauigkeit"' einzuschätzen bzgl. in Relation zu setzen. \\
+
+Zur Überprüfung der einzelnen Verfahren wurden zwei Routen definiert (Abbildung \ref{fig:routen}). Das Abgehen einer Route folgt dabei folgendem Schema: An Position des ersten Flags wird der "`Start"'-Button betätigt. Sobald die erste Positionierung erfolgte, wird der "`Timestamp"'-Button betätigt und Route in Schritttempo abgegangen. Jetzt wird der "`Timestamp"'-Button immer betätigt, wenn ein Flag der "`Groundtruth"' passiert wird. Am Ende der Route wird abschließend der "`Timestamp"'- und "`Stop"'-Button betätigt.
+
+\begin{figure}[h!]
+	\centering
+	\begin{subfigure}[b]{.64\textwidth}
+		\centering
+        \includegraphics[height=5.2cm]{route1}
+        \caption{Route  1 (Outdoors)}
+        \label{fig:route1}
+    \end{subfigure}
+    \begin{subfigure}[b]{.35\textwidth}
+    	\centering
+        \includegraphics[height=5.2cm]{route2}
+        \caption{Route 2 - (Indoors)}
+        \label{fig:route2}
+    \end{subfigure}
+    \caption{Die "`Groundtrouth"' der Routen mit den einzelnen Flags}
+    \label{fig:routen}
+\end{figure}
+
+\section{Erwartungen}
+	
+\section{Auswertung}	
+
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|l|l|l|l|}
+\hline
+Fehler & FLP\_HIGH & FLP\_LOW & LM\_GPS \\
+\hline
+\multicolumn{4}{|c|}{\textit{Lagemaße}}\\
+\hline
+Median & $0,00$ & $0,00$ & $0,00$ \\
+Konfidenzlevel 95\% & $0,00$ & $0,00$ & $0,00$ \\
+Arith. Mittel & $0,00$ & $0,00$ & $0,00$ \\
+\hline
+\multicolumn{4}{|c|}{\textit{Streumaße}}\\
+\hline
+Standardabweichung & $0,00$ & $0,00$ & $0,00$ \\
+\hline
+\end{tabular}
+	
+\end{document}
