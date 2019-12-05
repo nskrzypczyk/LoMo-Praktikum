@@ -219,23 +219,29 @@ public class StatisticsActivity extends AppCompatActivity {
      * da es lediglich alle 3 Sekunden updates geben sollte.
      */
     private void cleanLocationLists() {
-        cleanLocationList(flpHighLocationList);
-        cleanLocationList(flpLowLocationList);
-        cleanLocationList(lmLocationList);
+        cleanLocationList(flpHighLocationList, flpHighFlagTimestampList.get(flpHighFlagTimestampList.size() -1));
+        cleanLocationList(flpLowLocationList, flpLowFlagTimestampList.get(flpLowFlagTimestampList.size() -1));
+        cleanLocationList(lmLocationList, lmFlagTimestampList.get(lmFlagTimestampList.size() -1));
     }
 
-    private void cleanLocationList(List<Location> list) {
+    private void cleanLocationList(List<Location> list, Date lastFlag) {
         List<Location> cleanedList = new ArrayList<>();
         Location lastLoc = list.get(0);
         for(int i = 1; i < list.size(); i++) {
-            if(lastLoc.getTime() != list.get(i).getTime()) {
+            //Log.d(TAG, "TS: " + list.get(i).getTime());
+            if(lastLoc.getTime() + 3000 <= list.get(i).getTime()) {
                 cleanedList.add(list.get(i));
+                lastLoc = list.get(i);
+
+                if(lastLoc.getTime() >= lastFlag.getTime()) {
+                    break;
+                }
             }
-            lastLoc = list.get(i);
         }
 
         // Zu guter letzt überschreiben
-        list = cleanedList;
+        list.clear();
+        list.addAll(cleanedList);
     }
 
     private DataList doStatistics(String type, List<Date> flagTimestampList, List<Location> locationList) {
@@ -268,7 +274,7 @@ public class StatisticsActivity extends AppCompatActivity {
             offset += interpolated.size() - 1;
         }
 
-        Log.d(TAG, "Interpolated: " + locationList.size());
+        Log.d(TAG, "LocationList: " + locationList.size());
 
         Collections.sort(errorFlpHigh);
 
