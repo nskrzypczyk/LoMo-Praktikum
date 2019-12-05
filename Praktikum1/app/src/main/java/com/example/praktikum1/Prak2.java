@@ -50,7 +50,7 @@ public class Prak2 extends Activity implements
         GoogleApiClient.OnConnectionFailedListener {
     public static String TAG = "PRAK2";
     public static final long INTERVAL = 3000;
-    private static final long FASTEST_INTERVAL = INTERVAL/2;
+    private static final long FASTEST_INTERVAL = INTERVAL; //INTERVAL/2;
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
     Location mCurrentLocation;
