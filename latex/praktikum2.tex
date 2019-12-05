@@ -15,7 +15,7 @@
 
 \setlength{\parskip}{0em}
 \setlength{\parindent}{0em}
-\renewcommand{\baselinestretch}{1.15}
+\renewcommand{\baselinestretch}{1.5}
 
 \begin{document}
 
@@ -53,11 +53,21 @@ Zur Überprüfung der einzelnen Verfahren wurden zwei Routen definiert (Abbildun
 \end{figure}
 
 \section{Erwartungen}
+
+Wir erwarten, dass die Ergebnisse von FLP\_HIGH genauer sind als die Ergebnisse der übrigen, verwendeten Verfahren. LM\_GPS sollte ähnliche Fehler wie FLP\_HIGH ergeben. 
+
+% TODO: Erwartungen Outdoor vs. Indoor darstellen
 	
 \section{Auswertung}	
 
+Erstaunlicher Weise -- und entgegen unserer Erwartungen -- liefern FLP\_HIGH und FLP\_LOW nahezu gleiche Daten bzgl. der Genauigkeit. LM\_GPS scheint immer, einen deutlich größeren Fehler auszugeben, unabhängig von der Umgebung.
+
+\subsection{Outdoors}
+
+Wie bereits erwähnt, liefern die gewählten Verfahren des Fused Location Providers ähnliche Werte. An dieser Stelle kann man sogar soweit gehen und sagen, dass FLP\_HIGH und FLP\_LOW gleiche Daten hinsichtlich der Genauigkeit liefern. Median und arithmetisches Mittel liegen nur marginal auseinander und auch die Standardabweichungen trennen nur rund 40cm, was bei Längen von 40m nicht der Rede wert ist. Bemerkenswert ist, wie ungenau selbst die höchste Genauigkeit ist. Hier entstehen Fehler von $120,7$m (95\%-Konfidenzniveau). Dieser Fehler könnte daraus resultieren, dass der Fused Location Provider Outdoors größtenteils nur auf die GPS-Daten zurückgreifen kann.
+
 \renewcommand{\arraystretch}{1.2}
-\begin{table}
+\begin{table}[h!]
 	\centering
 	\caption{Ergebnisse Route 1 -- Outdoors (Abbildung \ref{fig:route1})}
 	\begin{tabular}{|l|l|l|l|}
@@ -77,7 +87,11 @@ Zur Überprüfung der einzelnen Verfahren wurden zwei Routen definiert (Abbildun
 	\end{tabular}
 \end{table}
 
-\begin{table}
+\subsection{Indoors}
+
+% todo
+
+\begin{table}[h!]
 	\centering
 	\caption{Ergebnisse Route 2 -- Indoors (Abbildung \ref{fig:route2})}
 	\begin{tabular}{|l|l|l|l|}
