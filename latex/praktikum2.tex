@@ -30,7 +30,7 @@ Auf jede Route werden drei verschiedene Verfahren angewandt:
 	\item LocationManager - \code{GPS\_PROVIDER} (nachfolgend "`LM\_GPS"' genannt)
 \end{itemize}
 
-Dabei entschieden wir uns für FLP\_HIGH, um die genaueste Positionierung zu erhalten. FLP\_LOW verzichte größtenteils auf GPS- und Wi-Fi-Signale und ermittle die Position über Cell Tower (laut Google). LM\_GPS wurde von uns ausgewählt, um die Genauigkeit von GPS zu der höchstmöglichen Genauigkeit und "`Cell Tower-Genauigkeit"' einzuschätzen bzgl. in Relation zu setzen. \\Sowohl die beiden Methoden des Fused-Location-Providers als auch der GPS-Provider des LocationManagers wurden mit einem Update-Intervall von 3 Sekunden versehen. Zudem werden im Rahmen der visuellen Aufbereitung der gesammelten Daten die aufgezeichneten und vordefinierten Routen als Polylines in einer Google Maps Activity dargestellt.\\
+Dabei entschieden wir uns für FLP\_HIGH, um die genaueste Positionierung zu erhalten. FLP\_LOW verzichte größtenteils auf GPS- und Wi-Fi-Signale und ermittle die Position über Cell Tower (laut Google). LM\_GPS wurde von uns ausgewählt, um die Genauigkeit von GPS zu der höchstmöglichen Genauigkeit und "`Cell Tower-Genauigkeit"' einzuschätzen bzgl. in Relation zu setzen. \\
 
 Zur Überprüfung der einzelnen Verfahren wurden zwei Routen definiert (Abbildung \ref{fig:routen}). Das Abgehen einer Route folgt dabei folgendem Schema: An Position des ersten Flags wird der "`Start"'-Button betätigt. Sobald die erste Positionierung erfolgte, wird der "`Timestamp"'-Button betätigt und Route in Schritttempo abgegangen. Jetzt wird der "`Timestamp"'-Button immer betätigt, wenn ein Flag der "`Groundtruth"' passiert wird. Am Ende der Route wird abschließend der "`Timestamp"'- und "`Stop"'-Button betätigt.
 
@@ -54,13 +54,19 @@ Zur Überprüfung der einzelnen Verfahren wurden zwei Routen definiert (Abbildun
 
 \section{Erwartungen}
 
-Wir erwarten, dass die Ergebnisse von FLP\_HIGH genauer sind als die Ergebnisse der übrigen, verwendeten Verfahren. LM\_GPS sollte outdoors ähnliche Fehler wie FLP\_HIGH ergeben. Indoors sollte LM\_GPS einen größeren Fehler aufweisen als die anderen Verfahren.
+Wir erwarten, dass die Ergebnisse von FLP\_HIGH genauer sind als die Ergebnisse der übrigen, verwendeten Verfahren. LM\_GPS sollte ähnliche Fehler wie FLP\_HIGH ergeben. 
 
 % TODO: Erwartungen Outdoor vs. Indoor darstellen
 	
 \section{Auswertung}	
 
 Erstaunlicher Weise -- und entgegen unserer Erwartungen -- liefern FLP\_HIGH und FLP\_LOW nahezu gleiche Daten bzgl. der Genauigkeit. LM\_GPS scheint immer, einen deutlich größeren Fehler auszugeben, unabhängig von der Umgebung.
+
+\subsection{Technische Umsetzung}
+
+In einem idealen System unter idealen Bedingungen erhält unsere App alle drei Sekunden eine Position vom Betriebssystem -- wie gewünscht. Dann kann zwischen den Punkten der Groundtrouth linear interpoliert werden, um die Genauigkeit zu ermitteln. Der Fehler ergibt sich durch die Distanz der gemessenen Position zur entsprechenden, interpolierten Position der Groundtrouth. \\
+
+Tatsächlich kommt es jedoch durch diverse Umstände dazu, dass die App nicht genau alle drei Sekunden eine Position aus dem Betriebssystem erhält. Meist entstehen Datenreihen, die entweder zu groß oder zu klein sind. Daher müssen die erhobenen Daten zunächst bereinigt werden: Sind die Datenreihen zu groß, so werden die "`überflüssigen"' Positionen gelöscht. Zusätzlich kann es vorkommen, dass die Positionen zu dicht bei einander liegen (zeitlich). Auch diese Daten werden aussortiert. 
 
 \subsection{Outdoors}
 
