@@ -54,7 +54,11 @@ Zur Überprüfung der einzelnen Verfahren wurden zwei Routen definiert (Abbildun
 
 \section{Erwartungen}
 
-Wir erwarten, dass die Ergebnisse von FLP\_HIGH genauer sind als die Ergebnisse der übrigen, verwendeten Verfahren. LM\_GPS sollte ähnliche Fehler wie FLP\_HIGH ergeben. 
+Wir erwarten, dass die Ergebnisse von FLP\_HIGH genauer sind als die Ergebnisse der übrigen, verwendeten Verfahren. LM\_GPS sollte ähnliche Fehler wie FLP\_LOW ergeben. 
+
+\subsection{Outdoors}
+
+\subsection{Indoors}
 
 % TODO: Erwartungen Outdoor vs. Indoor darstellen
 	
@@ -66,7 +70,9 @@ Erstaunlicher Weise -- und entgegen unserer Erwartungen -- liefern FLP\_HIGH und
 
 In einem idealen System unter idealen Bedingungen erhält unsere App alle drei Sekunden eine Position vom Betriebssystem -- wie gewünscht. Dann kann zwischen den Punkten der Groundtrouth linear interpoliert werden, um die Genauigkeit zu ermitteln. Der Fehler ergibt sich durch die Distanz der gemessenen Position zur entsprechenden, interpolierten Position der Groundtrouth. \\
 
-Tatsächlich kommt es jedoch durch diverse Umstände dazu, dass die App nicht genau alle drei Sekunden eine Position aus dem Betriebssystem erhält. Meist entstehen Datenreihen, die entweder zu groß oder zu klein sind. Daher müssen die erhobenen Daten zunächst bereinigt werden: Sind die Datenreihen zu groß, so werden die "`überflüssigen"' Positionen gelöscht. Zusätzlich kann es vorkommen, dass die Positionen zu dicht bei einander liegen (zeitlich). Auch diese Daten werden aussortiert. 
+Tatsächlich kommt es jedoch durch diverse Umstände dazu, dass die App nicht genau alle drei Sekunden eine Position aus dem Betriebssystem erhält. Meist entstehen Datenreihen, die entweder zu groß oder zu klein sind. Daher müssen die erhobenen Daten zunächst bereinigt werden: Sind die Datenreihen zu groß, so werden die "`überflüssigen"' Positionen gelöscht. Zusätzlich kann es vorkommen, dass die Positionen zu dicht bei einander liegen (zeitlich). Auch diese Daten werden aussortiert. \\
+
+Darüber hinaus kann der Fall eintreten, dass die Listen der gemessenen Daten kürzer ist als die der interpolierten Werte. Dann müsste der Mechanismus zur Datenauswertung in einen anderen Modus schalten. Um die tatsächliche Genauigkeit zu bestimmen -- in diesem Fall -- müssten die interpolierten Positionen mit den gemessenen Positionen gematcht werden (z.B. über Timestamps), anstatt über die Listen parallel zu iterieren.
 
 \subsection{Outdoors}
 
@@ -89,13 +95,14 @@ Wie bereits erwähnt, liefern die gewählten Verfahren des Fused Location Provid
 	\multicolumn{4}{|c|}{\textit{Streumaße}}\\
 	\hline
 	Standardabweichung & $40,274$ & $39,809$ & $45,163$ \\
+	Quartilsabstand & $74,335$ & $65,285$ & $77,686$ \\
 	\hline
 	\end{tabular}
 \end{table}
 
 \subsection{Indoors}
 
-% todo
+Überraschender Weise sind die Daten der beiden gewählten Verfahren des Fused Location Provider Indoors deutlich genauer als Outdoors. Die Positionen des LocationManagers sind sehr ungenau, wie erwartet. Außerdem ist die Streuung des Fused Location Providers deutlich niedriger als auf der ersten Route.
 
 \begin{table}[h!]
 	\centering
@@ -113,6 +120,7 @@ Wie bereits erwähnt, liefern die gewählten Verfahren des Fused Location Provid
 	\multicolumn{4}{|c|}{\textit{Streumaße}}\\
 	\hline
 	Standardabweichung & $18,721$ & $21,96$ & $77,317$ \\
+	Quartilsabstand & $27,64$ & $34,862$ & $143,938$ \\
 	\hline
 	\end{tabular}
 \end{table}
