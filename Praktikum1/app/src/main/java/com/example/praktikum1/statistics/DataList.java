@@ -28,6 +28,10 @@ public class DataList extends ArrayList<Float> {
         }
     }
 
+    public double interquartileRange() {
+        return percentile(75) - percentile(25);
+    }
+
     /**
      * Gibt das k-te Perzentil zurück
      * @param k

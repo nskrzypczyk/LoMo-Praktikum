@@ -73,7 +73,7 @@ public class StatisticsActivity extends AppCompatActivity {
     private DataList flpLowErrorList;
     private DataList lmErrorList;
 
-    private TraitTable ttMedian, ttPercentil95, ttMean, ttStdError;
+    private TraitTable ttMedian, ttPercentil95, ttMean, ttStdError, ttInterquartileRange;
 
     private List<Location> interpolate(Location locationA, Location locationB, Date t1, Date t2) {
         List<Location> interpolated = new ArrayList<>();
@@ -89,6 +89,7 @@ public class StatisticsActivity extends AppCompatActivity {
             Location loc = new Location("interpolatedLocation");
             loc.setLatitude(locationA.getLatitude() + dLat * dt);
             loc.setLongitude(locationA.getLongitude() + dLong * dt);
+            loc.setTime(locationA.getTime() + t); // Zur Überprüfung
             interpolated.add(loc);
 
             t = t + step;
@@ -263,18 +264,19 @@ public class StatisticsActivity extends AppCompatActivity {
                     flagTimestampList.get(j - 1),
                     flagTimestampList.get(j));
 
-            Log.d(TAG, "Interpolated: " + interpolated.size());
+            //Log.d(TAG, "Interpolated: " + interpolated.size());
 
             for(int i = 0; i < interpolated.size(); i++) {
                 if(i + offset < locationList.size()) {
                     errorFlpHigh.add(interpolated.get(i).distanceTo(locationList.get(i + offset)));
+                    Log.d(TAG, "" + ((interpolated.get(i).getTime() - locationList.get(i + offset).getTime())));
                 }
             }
 
-            offset += interpolated.size() - 1;
+            offset += interpolated.size();
         }
 
-        Log.d(TAG, "LocationList: " + locationList.size());
+        //Log.d(TAG, "LocationList: " + locationList.size());
 
         Collections.sort(errorFlpHigh);
 
@@ -343,6 +345,12 @@ public class StatisticsActivity extends AppCompatActivity {
             double2str.convert(round.apply(flpLowErrorList.stdError(), digits)),
             double2str.convert(round.apply(lmErrorList.stdError(), digits))
         });
+
+        ttInterquartileRange.setContent(new String[] {
+            double2str.convert(round.apply(flpHighErrorList.interquartileRange(), digits)),
+            double2str.convert(round.apply(flpLowErrorList.interquartileRange(), digits)),
+            double2str.convert(round.apply(lmErrorList.interquartileRange(), digits))
+        });
     }
 
     @Override
@@ -370,6 +378,7 @@ public class StatisticsActivity extends AppCompatActivity {
         ttPercentil95 = new TraitTable(getApplicationContext(), rootLayout, "Fehler Konfidenz-Level 95%");
         ttMean = new TraitTable(getApplicationContext(), rootLayout, "Arithm. Mittel");
         ttStdError = new TraitTable(getApplicationContext(), rootLayout, "Standardabweichung");
+        ttInterquartileRange = new TraitTable(getApplicationContext(), rootLayout, "Quartilsabstand");
 
         routeSelector = findViewById(R.id.routeSelector);
         routeSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
