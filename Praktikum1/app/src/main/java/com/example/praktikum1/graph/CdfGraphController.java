@@ -29,6 +29,8 @@ public class CdfGraphController {
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
 
+        graph.getViewport().setScalable(true);
+
         graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setMinY(0);
         graph.getViewport().setMaxY(1);
