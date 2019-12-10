@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.example.praktikum1.graph.CdfGraphController;
@@ -51,6 +52,7 @@ public class StatisticsActivity extends AppCompatActivity {
     private LinearLayout rootLayout;
     private Spinner routeSelector;
     private TextView statusTextView;
+    private Switch cleanDataSwitch;
     // GraphView
     private GraphView cdfGraph;
     private CdfGraphController graphController;
@@ -59,6 +61,8 @@ public class StatisticsActivity extends AppCompatActivity {
 
     // Die Route, welche dargestellt wird
     private String route = "route1";
+    // Ob die Daten vor der Berechnung gesäubert werden sollen oder nicht
+    private boolean cleanData = true;
 
     // DATA
     private List<Location> flpHighLocationList;
@@ -86,7 +90,7 @@ public class StatisticsActivity extends AppCompatActivity {
 
         while(t < t2.getTime()) {
             double dt = ((double)(t - t1.getTime())) / t21;
-            Log.d(TAG, "dt = " + dt);
+            //Log.d(TAG, "dt = " + dt);
             Location loc = new Location("interpolatedLocation_" + locationA.getTime() + t);
             loc.setLatitude(locationA.getLatitude() + dLat * dt);
             loc.setLongitude(locationA.getLongitude() + dLong * dt);
@@ -237,6 +241,8 @@ public class StatisticsActivity extends AppCompatActivity {
      * da es lediglich alle 3 Sekunden updates geben sollte.
      */
     private void cleanLocationLists() {
+        if(!cleanData) return;
+
         try {
             cleanLocationList(flpHighLocationList, flpHighFlagTimestampList.get(flpHighFlagTimestampList.size() -1));
             cleanLocationList(flpLowLocationList, flpLowFlagTimestampList.get(flpLowFlagTimestampList.size() -1));
@@ -295,7 +301,7 @@ public class StatisticsActivity extends AppCompatActivity {
             for(int i = 0; i < interpolated.size(); i++) {
                 if(i + offset < locationList.size()) {
                     errorFlpHigh.add(interpolated.get(i).distanceTo(locationList.get(i + offset)));
-                    //Log.d(TAG, "" + ((interpolated.get(i).getTime() - locationList.get(i + offset).getTime())));
+                    Log.d(TAG, "diff: " + ((interpolated.get(i).getTime() - locationList.get(i + offset).getTime())));
                     Log.d(TAG, interpolated.get(i) + " // " + locationList.get(i + offset));
                     counter++;
                 }
@@ -416,6 +422,13 @@ public class StatisticsActivity extends AppCompatActivity {
         ttMean = new TraitTable(getApplicationContext(), rootLayout, "Arithm. Mittel");
         ttStdError = new TraitTable(getApplicationContext(), rootLayout, "Standardabweichung");
         ttInterquartileRange = new TraitTable(getApplicationContext(), rootLayout, "Quartilsabstand");
+
+        cleanDataSwitch = findViewById(R.id.cleanDataSwitch);
+        cleanDataSwitch.setOnClickListener(v -> {
+            cleanData = cleanDataSwitch.isChecked();
+            loadDataAndDoStatistics();
+            updateUI();
+        });
 
         routeSelector = findViewById(R.id.routeSelector);
         routeSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
