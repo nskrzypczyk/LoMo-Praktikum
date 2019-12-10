@@ -58,6 +58,7 @@ Wir erwarten, dass die Ergebnisse von FLP\_HIGH genauer sind als die Ergebnisse 
 
 \subsection{Outdoors}
 
+
 % - recht genau high
 % - low sollte am ungenausten sein
 % - GPS iwo dazwischen (20m - 30m)
@@ -74,13 +75,15 @@ Wir erwarten, dass die Ergebnisse von FLP\_HIGH genauer sind als die Ergebnisse 
 	
 \section{Auswertung}	
 
-Erstaunlicher Weise -- und entgegen unserer Erwartungen -- liefern FLP\_HIGH und FLP\_LOW nahezu gleiche Daten bzgl. der Genauigkeit. LM\_GPS scheint immer, einen deutlich größeren Fehler auszugeben, unabhängig von der Umgebung.
+Erstaunlicher Weise -- und entgegen unserer Erwartungen -- liefern FLP\_HIGH und FLP\_LOW nahezu gleiche Daten bzgl. der Genauigkeit. LM\_GPS scheint immer, einen deutlich größeren Fehler auszugeben, unabhängig von der Umgebung. \\
+
+\textit{Anmerkung}: Die nachfolgenden Daten wurden mit einem Samsung Galaxy S8 erhoben.
 
 \subsection{Technische Umsetzung}
 
 In einem idealen System unter idealen Bedingungen erhält unsere App alle drei Sekunden eine Position vom Betriebssystem -- wie gewünscht. Dann kann zwischen den Punkten der Groundtrouth linear interpoliert werden, um die Genauigkeit zu ermitteln. Der Fehler ergibt sich durch die Distanz der gemessenen Position zur entsprechenden, interpolierten Position der Groundtrouth. \\
 
-Tatsächlich kommt es jedoch durch diverse Umstände dazu, dass die App nicht genau alle drei Sekunden eine Position aus dem Betriebssystem erhält. Meist entstehen Datenreihen, die entweder zu groß oder zu klein sind. Daher müssen die erhobenen Daten zunächst bereinigt werden: Sind die Datenreihen zu groß, so werden die "`überflüssigen"' Positionen gelöscht. Zusätzlich kann es vorkommen, dass die Positionen zu dicht bei einander liegen (zeitlich). Auch diese Daten werden aussortiert. \\
+Tatsächlich kommt es jedoch durch diverse Umstände dazu, dass die App nicht genau alle drei Sekunden eine Position aus dem Betriebssystem erhält. Meist entstehen Datenreihen, die entweder zu groß oder zu klein sind. Daher müssen die erhobenen Daten zunächst bereinigt werden: Sind die Datenreihen zu groß, so werden die "`überflüssigen"' Positionen gelöscht. Zusätzlich kann es vorkommen, dass die Positionen zu dicht bei einander liegen (zeitlich). Auch diese Daten werden aussortiert. Die Bereinigung der Daten findet ausschließlich im Modus "Clean Data" statt. \\
 
 Darüber hinaus kann der Fall eintreten, dass die Listen der gemessenen Daten kürzer ist als die der interpolierten Werte. Dann müsste der Mechanismus zur Datenauswertung in einen anderen Modus schalten. Um die tatsächliche Genauigkeit zu bestimmen -- in diesem Fall -- müssten die interpolierten Positionen mit den gemessenen Positionen gematcht werden (z.B. über Timestamps), anstatt über die Listen parallel zu iterieren.
 
@@ -98,14 +101,14 @@ Wie bereits erwähnt, liefern die gewählten Verfahren des Fused Location Provid
 	\hline
 	\multicolumn{4}{|c|}{\textit{Lagemaße}}\\
 	\hline
-	Median & $42,537$ & $42,511$ & $74,939$ \\
-	Konfidenzlevel 95\% & $129,342$ & $130,127$ & $152,002$ \\
-	Arithm. Mittel & $53,755$ & $54,877$ & $84,804$ \\
+	Median & $7,615$ & $8,957$ & $32,996$ \\
+	Konfidenzlevel 95\% & $18,699$ & $11,949$ & $50,564$ \\
+	Arithm. Mittel & $10,007$ & $8,791$ & $28,682$ \\
 	\hline
 	\multicolumn{4}{|c|}{\textit{Streumaße}}\\
 	\hline
-	Standardabweichung & $43,297$ & $42,193$ & $44,691$ \\
-	Quartilsabstand & $74,335$ & $65,285$ & $77,686$ \\
+	Standardabweichung & $4,627$ & $2,16$ & $16,546$ \\
+	Quartilsabstand & $6,891$ & $1,734$ & $32,941$ \\
 	\hline
 	\end{tabular}
 \end{table}
@@ -123,16 +126,42 @@ Wie bereits erwähnt, liefern die gewählten Verfahren des Fused Location Provid
 	\hline
 	\multicolumn{4}{|c|}{\textit{Lagemaße}}\\
 	\hline
-	Median & $23,459$ & $28,253$ & $149,883$ \\
-	Konfidenzlevel 95\% & $61,455$ & $69,472$ & $200,939$ \\
-	Arithm. Mittel & $28,333$ & $30,668$ & $105,941$ \\
+	Median & $15,962$ & $15,597$ & $85,378$ \\
+	Konfidenzlevel 95\% & $23,583$ & $36,193$ & $106,079$ \\
+	Arithm. Mittel & $14,911$ & $16,102$ & $62,419$ \\
 	\hline
 	\multicolumn{4}{|c|}{\textit{Streumaße}}\\
 	\hline
-	Standardabweichung & $19,024$ & $22,277$ & $77,317$ \\
-	Quartilsabstand & $27,64$ & $34,862$ & $143,938$ \\
+	Standardabweichung & $7,292$ & $10,682$ & $43,719$ \\
+	Quartilsabstand & $10,573$ & $16,456$ & $79,299$ \\
 	\hline
 	\end{tabular}
 \end{table}
+
+\section{Screenshots}
+
+\begin{figure}[h!]
+    \centering
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{screenshot_route1}
+        \caption{Auswertung Route 1}
+        \label{fig:auswertung1}
+    \end{subfigure}
+    ~ % Abstand
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{screenshot_route2}
+        \caption{Auswertung Route 2}
+        \label{fig:auswertung2}
+    \end{subfigure}
+    \caption{Auswertung der Routen}
+    \label{fig:auswertung}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{screenshot_routen_map}
+    \caption{Groundtruth und erhobene Daten}
+    \label{fig:map}
+\end{figure}
 	
 \end{document}
