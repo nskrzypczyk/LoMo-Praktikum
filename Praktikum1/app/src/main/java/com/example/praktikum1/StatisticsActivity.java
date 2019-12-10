@@ -85,8 +85,9 @@ public class StatisticsActivity extends AppCompatActivity {
         long t = t1.getTime() + step;
 
         while(t < t2.getTime()) {
-            double dt = (t - t1.getTime()) / t21;
-            Location loc = new Location("interpolatedLocation");
+            double dt = ((double)(t - t1.getTime())) / t21;
+            Log.d(TAG, "dt = " + dt);
+            Location loc = new Location("interpolatedLocation_" + locationA.getTime() + t);
             loc.setLatitude(locationA.getLatitude() + dLat * dt);
             loc.setLongitude(locationA.getLongitude() + dLong * dt);
             loc.setTime(locationA.getTime() + t); // Zur Überprüfung
@@ -123,7 +124,9 @@ public class StatisticsActivity extends AppCompatActivity {
                 .filter(name -> name.contains(selectedRoute))
                 .map(str -> new File(outputDir + File.separator + str)).collect(Collectors.toList());
 
-        files.forEach(file  -> Log.d(TAG, file.getName()));
+        //files.forEach(file  -> Log.d(TAG, file.getName()));
+
+        Log.d(TAG, "Files eingelesen");
 
         // Flags der Route auslesen
         File flagFile = files.stream().filter(f -> f.getName().equals(selectedRoute + ".csv")).findFirst().get();
@@ -139,21 +142,29 @@ public class StatisticsActivity extends AppCompatActivity {
             return loc;
         }).collect(Collectors.toList());
 
+        Log.d(TAG, "Flags der Route (" + selectedRoute + ") geladen");
+
         // Dateien mit den Positionen lesen
         Optional<File> opt = files.stream().filter(f -> f.getName().contains(Utils.TYPE_FLP_HIGH)).findFirst();
         if(opt.isPresent() && opt.get().exists()) {
             flpHighLocationList = readRecordedLocations(opt.get());
         }
 
+        Log.d(TAG, "[POS] FLP HIGH geladen");
+
         opt = files.stream().filter(f -> f.getName().contains(Utils.TYPE_FLP_LOW)).findFirst();
         if(opt.isPresent() && opt.get().exists()) {
             flpLowLocationList = readRecordedLocations(opt.get());
         }
 
+        Log.d(TAG, "[POS] FLP LOW geladen");
+
         opt = files.stream().filter(f -> f.getName().contains(Utils.TYPE_LM_GPS)).findFirst();
         if(opt.isPresent() && opt.get().exists()) {
             lmLocationList = readRecordedLocations(opt.get());
         }
+
+        Log.d(TAG, "[POS] LM GPS geladen");
 
         // Die Timestamps für die Flags holen
         String flpHighTimestampFilePattern = Utils.TYPE_FLP_HIGH + "_" + selectedRoute + ".timestamp.csv";
@@ -162,17 +173,23 @@ public class StatisticsActivity extends AppCompatActivity {
             flpHighFlagTimestampList = readRecordedTimestamps(opt.get());
         }
 
+        Log.d(TAG, "[TS] FLP HIGH geladen");
+
         String flpLowTimestampFilePattern = Utils.TYPE_FLP_LOW + "_" + selectedRoute + ".timestamp.csv";
         opt = files.stream().filter(f -> f.getName().contains(flpLowTimestampFilePattern)).findFirst();
         if(opt.isPresent() && opt.get().exists()) {
             flpLowFlagTimestampList = readRecordedTimestamps(opt.get());
         }
 
+        Log.d(TAG, "[TS] FLP LOW geladen");
+
         String lmTimestampFilePattern = Utils.TYPE_LM_GPS + "_" + selectedRoute + ".timestamp.csv";
         opt = files.stream().filter(f -> f.getName().contains(lmTimestampFilePattern)).findFirst();
         if(opt.isPresent() && opt.get().exists()) {
             lmFlagTimestampList = readRecordedTimestamps(opt.get());
         }
+
+        Log.d(TAG, "[TS] LM GPS geladen");
     }
 
     private List<Location> readRecordedLocations(File file) throws IOException {
@@ -186,7 +203,7 @@ public class StatisticsActivity extends AppCompatActivity {
             Location loc = new Location("RecordedLocation");
             loc.setLatitude(Double.parseDouble(e[1]));
             loc.setLongitude(Double.parseDouble(e[2]));
-            loc.setAltitude(Double.parseDouble(e[3]));
+            //loc.setAltitude(Double.parseDouble(e[3]));
             try {
                 loc.setTime(Utils.convertStringToDate(e[0]).getTime());
             } catch (ParseException ex) {
@@ -220,17 +237,26 @@ public class StatisticsActivity extends AppCompatActivity {
      * da es lediglich alle 3 Sekunden updates geben sollte.
      */
     private void cleanLocationLists() {
-        cleanLocationList(flpHighLocationList, flpHighFlagTimestampList.get(flpHighFlagTimestampList.size() -1));
-        cleanLocationList(flpLowLocationList, flpLowFlagTimestampList.get(flpLowFlagTimestampList.size() -1));
-        cleanLocationList(lmLocationList, lmFlagTimestampList.get(lmFlagTimestampList.size() -1));
+        try {
+            cleanLocationList(flpHighLocationList, flpHighFlagTimestampList.get(flpHighFlagTimestampList.size() -1));
+            cleanLocationList(flpLowLocationList, flpLowFlagTimestampList.get(flpLowFlagTimestampList.size() -1));
+            cleanLocationList(lmLocationList, lmFlagTimestampList.get(lmFlagTimestampList.size() -1));
+        }
+        catch(Exception e) {
+            statusTextView.setText("Nicht alle Location-Lists konnten bereinigt werden.");
+        }
     }
 
     private void cleanLocationList(List<Location> list, Date lastFlag) {
         List<Location> cleanedList = new ArrayList<>();
+
+        if(list.isEmpty()) return;
+
         Location lastLoc = list.get(0);
         for(int i = 1; i < list.size(); i++) {
             //Log.d(TAG, "TS: " + list.get(i).getTime());
-            if(lastLoc.getTime() + 3000 <= list.get(i).getTime()) {
+            if(lastLoc.getTime() + 2500 <= list.get(i).getTime()) {
+            //if(lastLoc.getTime() < list.get(i).getTime()) {
                 cleanedList.add(list.get(i));
                 lastLoc = list.get(i);
 
@@ -250,13 +276,13 @@ public class StatisticsActivity extends AppCompatActivity {
         if(flagTimestampList == null || locationList == null) return new DataList();
         if(flagTimestampList.size() < flagList.size()) return new DataList();
 
-        // Und Daten bereinigen
-        cleanLocationLists();
+        Log.d(TAG, "loactionList: " + locationList);
 
         // offset wird benötigt, da in der gesamten Timestamp-Liste die bereits
         // abgearbeiteten Timestamps berücksichtigt werden müssen
         DataList errorFlpHigh = new DataList();
         int offset = 0;
+        int counter = 0;
         for(int j = 1; j < flagList.size(); j++) {
             List<Location> interpolated = interpolate(
                     flagList.get(j - 1),
@@ -264,19 +290,22 @@ public class StatisticsActivity extends AppCompatActivity {
                     flagTimestampList.get(j - 1),
                     flagTimestampList.get(j));
 
-            //Log.d(TAG, "Interpolated: " + interpolated.size());
+            Log.d(TAG, "Interpolated: " + interpolated.size());
 
             for(int i = 0; i < interpolated.size(); i++) {
                 if(i + offset < locationList.size()) {
                     errorFlpHigh.add(interpolated.get(i).distanceTo(locationList.get(i + offset)));
-                    Log.d(TAG, "" + ((interpolated.get(i).getTime() - locationList.get(i + offset).getTime())));
+                    //Log.d(TAG, "" + ((interpolated.get(i).getTime() - locationList.get(i + offset).getTime())));
+                    Log.d(TAG, interpolated.get(i) + " // " + locationList.get(i + offset));
+                    counter++;
                 }
             }
 
             offset += interpolated.size();
         }
 
-        //Log.d(TAG, "LocationList: " + locationList.size());
+        Log.d(TAG, "LocationList: " + locationList.size());
+        Log.d(TAG, "Berücksichtigte Werte: " + counter);
 
         Collections.sort(errorFlpHigh);
 
@@ -308,11 +337,19 @@ public class StatisticsActivity extends AppCompatActivity {
         }
 
         if(doStatistics) {
+            Log.d(TAG, "Statistics Beginn");
             statusTextView.setText("");
 
+            // Zuvor Daten bereinigen
+            cleanLocationLists();
+            Log.d(TAG, "Daten bereinigt");
+
             flpHighErrorList = doStatistics(Utils.TYPE_FLP_HIGH, flpHighFlagTimestampList, flpHighLocationList);
+            Log.d(TAG, "FLP HIGH Statistics abgeschlossen");
             flpLowErrorList = doStatistics(Utils.TYPE_FLP_LOW, flpLowFlagTimestampList, flpLowLocationList);
+            Log.d(TAG, "FLP LOW Statistics abgeschlossen");
             lmErrorList = doStatistics(Utils.TYPE_LM_GPS, lmFlagTimestampList, lmLocationList);
+            Log.d(TAG, "LM GPS Statistics abgeschlossen");
         }
     }
 
