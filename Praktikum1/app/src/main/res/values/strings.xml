@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Praktikum1</string>
+    <string name="app_name">Praktikum</string>
     <string name="title_activity_settings">Einstellungen</string>
     <string name="title_activity_logs">Logs</string>
 
