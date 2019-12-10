@@ -19,6 +19,11 @@
 
 \begin{document}
 
+\begin{figure}[t]
+	\flushright
+	\includegraphics[width=5cm]{hs-bo-logo}
+\end{figure}
+
 \docheader
 
 \section{Wie und wo wir messen}
@@ -32,7 +37,7 @@ Auf jede Route werden drei verschiedene Verfahren angewandt:
 
 Dabei entschieden wir uns für FLP\_HIGH, um die genaueste Positionierung zu erhalten. FLP\_LOW verzichte größtenteils auf GPS- und Wi-Fi-Signale und ermittle die Position über Cell Tower (laut Google). LM\_GPS wurde von uns ausgewählt, um die Genauigkeit von GPS zu der höchstmöglichen Genauigkeit und "`Cell Tower-Genauigkeit"' einzuschätzen bzgl. in Relation zu setzen. \\
 
-Zur Überprüfung der einzelnen Verfahren wurden zwei Routen definiert (Abbildung \ref{fig:routen}). Das Abgehen einer Route folgt dabei folgendem Schema: An Position des ersten Flags wird der "`Start"'-Button betätigt. Sobald die erste Positionierung erfolgte, wird der "`Timestamp"'-Button betätigt und Route in Schritttempo abgegangen. Jetzt wird der "`Timestamp"'-Button immer betätigt, wenn ein Flag der "`Groundtruth"' passiert wird. Am Ende der Route wird abschließend der "`Timestamp"'- und "`Stop"'-Button betätigt.
+Zur Überprüfung der einzelnen Verfahren wurden zwei Routen definiert (Abbildung \ref{fig:routen}). Das Abgehen einer Route folgt dabei folgendem Schema: An Position des ersten Flags wird der "`Start"'-Button betätigt. Sobald die erste Positionierung erfolgte, wird der "`Timestamp"'-Button betätigt und die Route im Schritttempo abgegangen. Jetzt wird der "`Timestamp"'-Button immer betätigt, wenn ein Flag der "`Groundtruth"' passiert wird. Am Ende der Route wird abschließend der "`Timestamp"'- und "`Stop"'-Button betätigt.
 
 \begin{figure}[h!]
 	\centering
@@ -58,24 +63,19 @@ Wir erwarten, dass die Ergebnisse von FLP\_HIGH genauer sind als die Ergebnisse 
 
 \subsection{Outdoors}
 
+Unserer Erwartung nach sollte FLP\_HIGH die genauesten Werte liefern. Die Fehler von LM\_GPS sollten etwas größer ausfallen, aber dennoch ähnlich aussehen, da FLP\_HIGH größtenteils auf GPS-Daten zurückgreift. \\
 
-% - recht genau high
-% - low sollte am ungenausten sein
-% - GPS iwo dazwischen (20m - 30m)
-%
-
+FLP\_LOW sollte sehr ungenaue Daten liefern, denn dieser verwendet hauptsächlich Mobilfunksignale zur Positionsbestimmung.
 
 \subsection{Indoors}
 
-% - gps nicht zu gebrauchen, ggf. bekommt man nicht mal pos
-% - flp high und eventuell low genau, aber ungenauer als outdoors
-%   oder vielleicht sogar ähnliche genauigkeit wie outdorrs wegen guter 
+Indoors sollten die Positionen, welche rein durch GPS (LM\_GPS) ermittelt wurden, so ungenau sein, dass diese substanzlos sind. \\
 
-% TODO: Erwartungen Outdoor vs. Indoor darstellen
-	
+Auch die Verfahren des Fused Location Providers sollten Indoors an Genauigkeit verlieren. Zumindest dann, wenn diese sich überwiegend an GPS- bzw. Mobilfunksignalen orientieren. Sollten diese Verfahren auf WiFi-Positionierung umschalten (oder diese dazuschalten), wenn die primär verwendeten Methoden unzureichend sind, könnte auch Indoors eine recht hohe Genauigkeit zustande kommen. Allerdings ist dies reine Spekulation über die interne Logik des Fused Location Providers.
+
 \section{Auswertung}	
 
-Erstaunlicher Weise -- und entgegen unserer Erwartungen -- liefern FLP\_HIGH und FLP\_LOW nahezu gleiche Daten bzgl. der Genauigkeit. LM\_GPS scheint immer, einen deutlich größeren Fehler auszugeben, unabhängig von der Umgebung. \\
+Die Verfahren FLP\_HIGH und FLP\_LOW liefern recht ähnliche Daten bzgl. des Fehlers. LM\_GPS ist in beiden Fällen (Indoors und Outdoors) ungenauer als die gewählten Methoden des Fused Location Providers.\\
 
 \textit{Anmerkung}: Die nachfolgenden Daten wurden mit einem Samsung Galaxy S8 erhoben.
 
@@ -83,13 +83,15 @@ Erstaunlicher Weise -- und entgegen unserer Erwartungen -- liefern FLP\_HIGH und
 
 In einem idealen System unter idealen Bedingungen erhält unsere App alle drei Sekunden eine Position vom Betriebssystem -- wie gewünscht. Dann kann zwischen den Punkten der Groundtrouth linear interpoliert werden, um die Genauigkeit zu ermitteln. Der Fehler ergibt sich durch die Distanz der gemessenen Position zur entsprechenden, interpolierten Position der Groundtrouth. \\
 
-Tatsächlich kommt es jedoch durch diverse Umstände dazu, dass die App nicht genau alle drei Sekunden eine Position aus dem Betriebssystem erhält. Meist entstehen Datenreihen, die entweder zu groß oder zu klein sind. Daher müssen die erhobenen Daten zunächst bereinigt werden: Sind die Datenreihen zu groß, so werden die "`überflüssigen"' Positionen gelöscht. Zusätzlich kann es vorkommen, dass die Positionen zu dicht bei einander liegen (zeitlich). Auch diese Daten werden aussortiert. Die Bereinigung der Daten findet ausschließlich im Modus "Clean Data" statt. \\
+Tatsächlich kommt es jedoch durch diverse Umstände dazu, dass die App nicht genau alle drei Sekunden eine Position aus dem Betriebssystem erhält. Meist entstehen Datenreihen, die entweder zu groß oder zu klein sind. Daher müssen die erhobenen Daten zunächst bereinigt werden: Sind die Datenreihen zu groß, so werden die "`überflüssigen"' Positionen gelöscht. Zusätzlich kann es vorkommen, dass die Positionen zu dicht beieinander liegen (zeitlich). Auch diese Daten werden aussortiert. Die Bereinigung der Daten findet ausschließlich im Modus "`Clean Data"' statt. \\
 
-Darüber hinaus kann der Fall eintreten, dass die Listen der gemessenen Daten kürzer ist als die der interpolierten Werte. Dann müsste der Mechanismus zur Datenauswertung in einen anderen Modus schalten. Um die tatsächliche Genauigkeit zu bestimmen -- in diesem Fall -- müssten die interpolierten Positionen mit den gemessenen Positionen gematcht werden (z.B. über Timestamps), anstatt über die Listen parallel zu iterieren.
+Darüber hinaus kann der Fall eintreten, dass die Listen der gemessenen Daten kürzer sind als die der interpolierten Werte. Dann müsste der Mechanismus zur Datenauswertung in einen anderen Modus schalten. Um die tatsächliche Genauigkeit zu bestimmen -- in diesem Fall -- müssten die interpolierten Positionen mit den gemessenen Positionen gematcht werden (z.B. über Timestamps), anstatt über die Listen parallel zu iterieren.
 
 \subsection{Outdoors}
 
-Wie bereits erwähnt, liefern die gewählten Verfahren des Fused Location Providers ähnliche Werte. An dieser Stelle kann man sogar soweit gehen und sagen, dass FLP\_HIGH und FLP\_LOW gleiche Daten hinsichtlich der Genauigkeit liefern. Median und arithmetisches Mittel liegen nur marginal auseinander und auch die Standardabweichungen trennen nur rund 40cm, was bei Längen von 40m nicht der Rede wert ist. Bemerkenswert ist, wie ungenau selbst die höchste Genauigkeit ist. Hier entstehen Fehler von $120,7$m (95\%-Konfidenzniveau). Dieser Fehler könnte daraus resultieren, dass der Fused Location Provider Outdoors größtenteils nur auf die GPS-Daten zurückgreifen kann.
+Die Methoden des Fused Location Providers liefern ähnliche Fehler. Allerdings -- und entgegen der Erwartungen -- sind die Daten von FLP\_LOW genauer als die von FLP\_HIGH. Der Median liegt bei letzterem niedriger, jedoch sind arithmetisches Mittel sowie das 95te Perzentil (Konfidenzlevel 95\%) bei FLP\_LOW deutlich niedriger. Somit ist die Verteilung der Messfehler von FLP\_HIGH rechtsschief. Folglich gibt es nach oben stärkere Abweichungen als bei FLP\_LOW. \\
+
+Die reinen GPS-Werte sind in diesem Versuch deutlich schlechter ausgefallen als erwartet. Der Vermutung nach hätten die Fehler von FLP\_LOW so aussehen sollen, da die Positionierung über das Mobilfunknetz in der Regel (sehr) ungenau ist. Eine Mögliche Erklärung für die ungenauen GPS-Positionen, könnte sein, dass der Startpunkt der Outdoor-Route in einem sogenannten "`Urban Canyon "' liegt. Die Fehlerquelle kann aber auch bei einem fehlerbehafteten Timestamp o.ä. liegen, denn Fehler von 50 Metern sind auf der Karte (Abbildung \ref{fig:map}) nicht zu erkennen.
 
 \renewcommand{\arraystretch}{1.2}
 \begin{table}[h!]
@@ -115,7 +117,9 @@ Wie bereits erwähnt, liefern die gewählten Verfahren des Fused Location Provid
 
 \subsection{Indoors}
 
-Überraschender Weise sind die Daten der beiden gewählten Verfahren des Fused Location Provider Indoors deutlich genauer als Outdoors. Die Positionen des LocationManagers sind sehr ungenau, wie erwartet. Außerdem ist die Streuung des Fused Location Providers deutlich niedriger als auf der ersten Route.
+In Gebäuden büßen alle Positionierungsvarianten an Genauigkeit ein. FLP\_HIGH liefert dabei noch die genauesten Ergebnisse. FLP\_LOW ist in diesem Fall ungenauer als FLP\_HIGH und die Fehler der reinen GPS-Daten liegen noch höher als bei der Route im Freien. FLP\_LOW ist auch hier viel genauer als erwartet. \\
+
+Daneben ist die Streuung der Fehler deutlich größer. Dies zeigen Standardabweichung und Quartilsabstand an.
 
 \begin{table}[h!]
 	\centering
@@ -138,17 +142,24 @@ Wie bereits erwähnt, liefern die gewählten Verfahren des Fused Location Provid
 	\end{tabular}
 \end{table}
 
+\subsection{Zusammenfassung}
+
+Im Allgemeinen sind die gewählten Verfahren zur Positionierung im Freien genauer als in Gebäuden. Zusätzlich ist die Streuung der Daten (bzw. Fehler) Indoors größer als Outdoors. Dies sind die Ergebnisse, die den Erwartungen entsprechen. \\
+
+Was nicht den Erwartungen entspricht, ist die Genauigkeit von FLP\_LOW. Neben deutlich höheren Fehlern erwarteten wir unter keinen Umständen das FLP\_LOW unter freiem Himmel genauer ist als FLP\_HIGH. FLP\_LOW sollte unseren Erwartungen nach die ungenaueste Methode mit Fehlern im Bereich von 50 - 100 Metern (oder mehr) sein. Bezüglich der reinen GPS-Daten wird ein Messfehler vermutet (zumindest Outdoors).
+
+\newpage
 \section{Screenshots}
 
 \begin{figure}[h!]
     \centering
-    \begin{subfigure}[b]{0.4\textwidth}
+    \begin{subfigure}[b]{0.35\textwidth}
         \includegraphics[width=\textwidth]{screenshot_route1}
         \caption{Auswertung Route 1}
         \label{fig:auswertung1}
     \end{subfigure}
     ~ % Abstand
-    \begin{subfigure}[b]{0.4\textwidth}
+    \begin{subfigure}[b]{0.35\textwidth}
         \includegraphics[width=\textwidth]{screenshot_route2}
         \caption{Auswertung Route 2}
         \label{fig:auswertung2}
