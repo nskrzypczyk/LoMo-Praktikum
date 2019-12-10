@@ -29,6 +29,8 @@ public class DataList extends ArrayList<Float> {
     }
 
     public double interquartileRange() {
+        if(super.isEmpty()) return -1;
+
         return percentile(75) - percentile(25);
     }
 
