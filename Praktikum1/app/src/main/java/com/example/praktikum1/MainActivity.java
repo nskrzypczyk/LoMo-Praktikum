@@ -61,7 +61,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 @Getter  @Setter
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
-    Button btnUpdate, btnStop, btnPrak2;
+    Button btnUpdate, btnStop, btnPrak2, btnPrak3;
     TextView tvGPSLong, tvGPSLat, tvGPSAlt, tvAcc,tvProx, tvAxis;
     LocationListener locListener;
     SensorManager sensorManager;
@@ -138,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         btnUpdate = findViewById(R.id.btnUpdate);
         btnStop = findViewById(R.id.btnStop);
         btnPrak2 = findViewById(R.id.btnPrak2);
+        btnPrak3 = findViewById(R.id.btnPrak3);
         tvGPSLong = (TextView) findViewById(R.id.tvGPSLong);
         tvGPSLat = (TextView) findViewById(R.id.tvGPSLat);
         tvGPSAlt = findViewById(R.id.tvGPSAlt);
@@ -150,6 +151,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         btnPrak2.setOnClickListener(e->{
             Intent i = new Intent(this, Prak2.class);
+            startActivity(i);
+        });
+
+        btnPrak3.setOnClickListener(e->{
+            Intent i = new Intent(this, Prakt3.class);
             startActivity(i);
         });
 
