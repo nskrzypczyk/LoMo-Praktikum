@@ -18,24 +18,27 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Button;
 
-public class Prakt3 extends AppCompatActivity {
+public class Prakt3Dist extends AppCompatActivity {
 
     SeekBar slider;
-    Button btnStart, btnDist;
+    Button btnStart;
     private TextView tvLat, tvLong, tvAlt, tvInterval, tvTimestamp, tvCounter;
     LocationManager locManager;
     LocationListener locListener;
 
+    Location lastLoc = new Location("");
+    boolean firstLoc = true;
+
     Location mCurrentLocation;
 
     boolean isActive;
-    int interval = 1;
+    int dist = 1;
     int counter = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_prakt3);
+        setContentView(R.layout.activity_prakt3_dist);
         locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE); // locationmanager instanz
         this.initComponents();
 
@@ -46,9 +49,20 @@ public class Prakt3 extends AppCompatActivity {
                     System.out.println("Keine Daten");
                 }
                 try {
-                    mCurrentLocation = location;
-                    counter++;
-                    updateUI();
+                    if(firstLoc){
+                        lastLoc = location;
+                        mCurrentLocation = location;
+                        counter++;
+                        updateUI();
+                        firstLoc = false;
+                    }
+                    else{
+                        if(lastLoc.distanceTo(location) >= dist){
+                            mCurrentLocation = location;
+                            counter++;
+                            updateUI();
+                        }
+                    }
 
                 } catch (Exception e) {
                     Log.e("OOF", "onLocationChanged: ", e.getCause());
@@ -85,11 +99,6 @@ public class Prakt3 extends AppCompatActivity {
 
         });
 
-        btnDist.setOnClickListener(e->{
-            Intent i = new Intent(this, Prakt3Dist.class);
-            startActivity(i);
-        });
-
         this.slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser){
@@ -113,10 +122,9 @@ public class Prakt3 extends AppCompatActivity {
         this.tvTimestamp = this.findViewById(R.id.tvTimestamp);
         this.tvCounter = this.findViewById(R.id.tvCounter);
         this.btnStart = this.findViewById(R.id.btnStart);
-        this.btnDist = this.findViewById(R.id.btnDist);
         this.slider = this.findViewById(R.id.slider);
         this.slider.setMin(1);
-        this.slider.setMax(10);
+        this.slider.setMax(25);
 
     }
 
@@ -134,9 +142,9 @@ public class Prakt3 extends AppCompatActivity {
         }
     }
 
-    private void updateInterval(int interval){
-        this.interval = interval;
-        tvInterval.setText(interval + "");
+    private void updateInterval(int dist){
+        this.dist = dist;
+        tvInterval.setText(dist + "");
     }
 
     private void stop(){
@@ -151,7 +159,7 @@ public class Prakt3 extends AppCompatActivity {
     private void start(){
         btnStart.setText("STOP");
 
-        locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, this.interval*1000, 0, locListener);
+        locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListener);
         isActive = true;
     }
 

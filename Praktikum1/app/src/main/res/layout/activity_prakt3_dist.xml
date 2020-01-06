@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Prakt3">
+    tools:context=".Prakt3Dist">
 
     <Button
         android:id="@+id/btnStart"
@@ -152,20 +152,9 @@
         android:id="@+id/textView12"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sekunden"
+        android:text="Meter"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
         app:layout_constraintStart_toEndOf="@+id/tvInterval"
         app:layout_constraintTop_toTopOf="@+id/tvInterval" />
-
-    <Button
-        android:id="@+id/btnDist"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="112dp"
-        android:text="Prak3Dist"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnStart" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
