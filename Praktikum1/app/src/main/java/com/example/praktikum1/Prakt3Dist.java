@@ -7,6 +7,10 @@ import androidx.preference.PreferenceManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
+import android.hardware.TriggerEvent;
+import android.hardware.TriggerEventListener;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -25,10 +29,14 @@ public class Prakt3Dist extends AppCompatActivity {
     private TextView tvLat, tvLong, tvAlt, tvInterval, tvTimestamp, tvCounter;
     LocationManager locManager;
     LocationListener locListener;
+    private SensorManager sensorManager;
+    private Sensor sensor;
+    private TriggerEventListener triggerEventListener;
 
     Location lastLoc = new Location("");
     boolean firstLoc = true;
 
+    boolean sigMotion = true;
     Location mCurrentLocation;
 
     boolean isActive;
@@ -40,7 +48,17 @@ public class Prakt3Dist extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_prakt3_dist);
         locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE); // locationmanager instanz
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION);
         this.initComponents();
+
+        triggerEventListener = new TriggerEventListener() {
+            @Override
+            public void onTrigger(TriggerEvent event) {
+                sigMotion = true;
+                startGPS();
+            }
+        };
 
         locListener = new android.location.LocationListener() {
             @Override // wird aufgerufen, wenn es Positionsupdates gibt
@@ -54,13 +72,17 @@ public class Prakt3Dist extends AppCompatActivity {
                         mCurrentLocation = location;
                         counter++;
                         updateUI();
+                        stopGPS();
                         firstLoc = false;
+                        sigMotion = false;
                     }
                     else{
                         if(lastLoc.distanceTo(location) >= dist){
                             mCurrentLocation = location;
                             counter++;
                             updateUI();
+                            stopGPS();
+                            sigMotion = false;
                         }
                     }
 
@@ -112,6 +134,8 @@ public class Prakt3Dist extends AppCompatActivity {
                 stop();
             }
         });
+
+        sensorManager.requestTriggerSensor(triggerEventListener, sensor);
     }
 
     private void initComponents() {
@@ -147,6 +171,10 @@ public class Prakt3Dist extends AppCompatActivity {
         tvInterval.setText(dist + "");
     }
 
+    public void stopGPS(){
+        locManager.removeUpdates(locListener);
+    }
+
     private void stop(){
         locManager.removeUpdates(locListener);
         tvLong.setText("STOP");
@@ -158,9 +186,17 @@ public class Prakt3Dist extends AppCompatActivity {
 
     private void start(){
         btnStart.setText("STOP");
+    }
 
-        locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListener);
-        isActive = true;
+    private void startGPS(){
+        if(firstLoc){
+            locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListener);
+            isActive = true;
+        }
+        else if(sigMotion) {
+            locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListener);
+            isActive = true;
+        }
     }
 
 }
