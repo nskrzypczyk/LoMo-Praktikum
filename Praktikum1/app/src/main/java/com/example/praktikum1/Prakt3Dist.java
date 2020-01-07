@@ -7,6 +7,7 @@ import androidx.preference.PreferenceManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.hardware.TriggerEvent;
@@ -26,12 +27,14 @@ public class Prakt3Dist extends AppCompatActivity {
 
     SeekBar slider;
     Button btnStart;
-    private TextView tvLat, tvLong, tvAlt, tvInterval, tvTimestamp, tvCounter;
+    private TextView tvLat, tvLong, tvAlt, tvInterval, tvTimestamp, tvCounter, tvSigMotion;
     LocationManager locManager;
     LocationListener locListener;
     private SensorManager sensorManager;
     private Sensor sensor;
     private TriggerEventListener triggerEventListener;
+    int red = Color.RED;
+    int green = Color.GREEN;
 
     Location lastLoc = new Location("");
     boolean firstLoc = true;
@@ -39,6 +42,7 @@ public class Prakt3Dist extends AppCompatActivity {
     boolean sigMotion = true;
     Location mCurrentLocation;
 
+    boolean GPSActive = false;
     boolean isActive;
     int dist = 1;
     int counter = 0;
@@ -55,8 +59,12 @@ public class Prakt3Dist extends AppCompatActivity {
         triggerEventListener = new TriggerEventListener() {
             @Override
             public void onTrigger(TriggerEvent event) {
-                sigMotion = true;
-                startGPS();
+                System.out.println("SigMotion detected!");
+                if(isActive) {
+                    sigMotion = true;
+                    tvSigMotion.setTextColor(green);
+                    startGPS();
+                }
             }
         };
 
@@ -75,6 +83,7 @@ public class Prakt3Dist extends AppCompatActivity {
                         stopGPS();
                         firstLoc = false;
                         sigMotion = false;
+                        tvSigMotion.setTextColor(red);
                     }
                     else{
                         if(lastLoc.distanceTo(location) >= dist){
@@ -83,6 +92,7 @@ public class Prakt3Dist extends AppCompatActivity {
                             updateUI();
                             stopGPS();
                             sigMotion = false;
+                            tvSigMotion.setTextColor(red);
                         }
                     }
 
@@ -145,6 +155,7 @@ public class Prakt3Dist extends AppCompatActivity {
         this.tvInterval = this.findViewById(R.id.tvInterval);
         this.tvTimestamp = this.findViewById(R.id.tvTimestamp);
         this.tvCounter = this.findViewById(R.id.tvCounter);
+        this.tvSigMotion = this.findViewById(R.id.tvSigMotion);
         this.btnStart = this.findViewById(R.id.btnStart);
         this.slider = this.findViewById(R.id.slider);
         this.slider.setMin(1);
@@ -171,11 +182,13 @@ public class Prakt3Dist extends AppCompatActivity {
         tvInterval.setText(dist + "");
     }
 
-    public void stopGPS(){
+    public void stopGPS() {
+        GPSActive = false;
         locManager.removeUpdates(locListener);
     }
 
     private void stop(){
+        GPSActive = false;
         locManager.removeUpdates(locListener);
         tvLong.setText("STOP");
         tvLat.setText("STOP");
@@ -185,17 +198,23 @@ public class Prakt3Dist extends AppCompatActivity {
     }
 
     private void start(){
+        System.out.println("Start");
         btnStart.setText("STOP");
+        isActive = true;
+        startGPS();
     }
 
     private void startGPS(){
         if(firstLoc){
+            System.out.println("GPS Active");
+            GPSActive = true;
             locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListener);
-            isActive = true;
+
         }
-        else if(sigMotion) {
+        else if(sigMotion && !GPSActive) {
+            System.out.println("GPS Active");
+            GPSActive = true;
             locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListener);
-            isActive = true;
         }
     }
 

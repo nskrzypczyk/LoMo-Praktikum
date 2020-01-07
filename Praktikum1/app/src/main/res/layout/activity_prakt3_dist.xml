@@ -157,4 +157,15 @@
         app:layout_constraintStart_toEndOf="@+id/tvInterval"
         app:layout_constraintTop_toTopOf="@+id/tvInterval" />
 
+    <TextView
+        android:id="@+id/tvSigMotion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SigMotion"
+        android:textColor="#8BC34A"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnStart" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
