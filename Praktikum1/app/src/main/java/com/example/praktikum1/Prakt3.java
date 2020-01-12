@@ -1,10 +1,12 @@
 package com.example.praktikum1;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.preference.PreferenceManager;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -18,15 +20,27 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Button;
 
+import org.json.JSONObject;
+
+import lombok.Getter;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class Prakt3 extends AppCompatActivity {
 
     SeekBar slider;
-    Button btnStart, btnDist;
+    Button btnStart, btnDist, btnExport;
     private TextView tvLat, tvLong, tvAlt, tvInterval, tvTimestamp, tvCounter;
     LocationManager locManager;
     LocationListener locListener;
 
     Location mCurrentLocation;
+
+    @Getter
+    OkHttpClient client;
 
     boolean isActive;
     int interval = 1;
@@ -38,6 +52,7 @@ public class Prakt3 extends AppCompatActivity {
         setContentView(R.layout.activity_prakt3);
         locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE); // locationmanager instanz
         this.initComponents();
+        client = new OkHttpClient(); // http client instanz
 
         locListener = new android.location.LocationListener() {
             @Override // wird aufgerufen, wenn es Positionsupdates gibt
@@ -55,6 +70,21 @@ public class Prakt3 extends AppCompatActivity {
                     tvLong.setText("ERROR");
                     tvLat.setText("ERROR");
                     tvAlt.setText("ERROR");
+                }
+
+                try {
+                    POSTrequest(location);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    new AlertDialog.Builder(Prakt3.this).setTitle("Ein Fehler ist aufgetreten")
+                            .setMessage("Der angegebene Server konnte nicht erreicht werden :(")
+                            .setNeutralButton("Serverangabe prüfen", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent = new Intent(Prakt3.this, SettingsActivity.class);
+                                    startActivity(intent);
+                                }
+                            }).create().show(); // TODO: Wird noch nicht angezeigt
                 }
 
             }
@@ -82,6 +112,10 @@ public class Prakt3 extends AppCompatActivity {
             } else {
                 stop();
             }
+
+        });
+
+        btnExport.setOnClickListener(e -> {
 
         });
 
@@ -155,4 +189,63 @@ public class Prakt3 extends AppCompatActivity {
         isActive = true;
     }
 
+    public void POSTrequest(Location position) {
+        System.out.println("URL: " + "http://" + this.getURL());
+        String URL = "http://" + this.getURL();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                MediaType JSON = MediaType.parse("application/json;charset=utf-8");
+                JSONObject actual = new JSONObject();
+                RequestBody body = null;
+                try {
+                    actual.put("timeStamp", Utils.getTimeStamp(mCurrentLocation));
+                    actual.put("lat", position.getLatitude());
+                    actual.put("long", position.getLongitude());
+                    actual.put("alt", position.getAltitude());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                try {
+                    body = RequestBody.create(JSON, actual.toString());
+                    Request req = new Request.Builder().url(URL + "/api/position/send").post(body).build();
+                    Response res = client.newCall(req).execute();
+                    System.out.println(res.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                System.out.println(body);
+            }
+        }).start();
+
+    }
+
+    public void Exportrequest() {
+        System.out.println("URL: " + "http://" + this.getURL());
+        String URL = "http://" + this.getURL();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                MediaType JSON = MediaType.parse("application/json;charset=utf-8");
+                JSONObject actual = new JSONObject();
+                RequestBody body = null;
+                try {
+                    body = RequestBody.create(JSON, actual.toString());
+                    Request req = new Request.Builder().url(URL + "/api/position/export").post(body).build();
+                    Response res = client.newCall(req).execute();
+                    System.out.println(res.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                System.out.println(body);
+            }
+        }).start();
+    }
+
+    // Serveradresse aus der Settings XML holen
+    public String getURL() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        String val = sp.getString("server_address", "http://localhost:80");
+        return val;
+    }
 }
