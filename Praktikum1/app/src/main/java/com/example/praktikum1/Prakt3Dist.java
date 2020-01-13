@@ -46,6 +46,7 @@ public class Prakt3Dist extends AppCompatActivity {
     boolean isActive;
     int dist = 1;
     int counter = 0;
+    long nextPosTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,10 +75,23 @@ public class Prakt3Dist extends AppCompatActivity {
                 if (location == null) {
                     System.out.println("Keine Daten");
                 }
+
                 try {
                     if(firstLoc){
                         lastLoc = location;
                         mCurrentLocation = location;
+                        float eModel = location.getAccuracy();
+                        float vEst = location.getSpeed();
+                        float tLimit;
+                        try {
+                            tLimit = (dist - eModel) / vEst;
+                        }
+                        catch(Exception e){
+                            tLimit = 1;
+                        }
+                        int sec = Math.round(tLimit);
+                        nextPosTime = System.currentTimeMillis() + sec;
+
                         counter++;
                         updateUI();
                         stopGPS();
@@ -86,8 +100,13 @@ public class Prakt3Dist extends AppCompatActivity {
                         tvSigMotion.setTextColor(red);
                     }
                     else{
-                        if(lastLoc.distanceTo(location) >= dist){
+                        if(lastLoc.distanceTo(location) >= dist && nextPosTime <= System.currentTimeMillis()){
                             mCurrentLocation = location;
+                            float eModel = location.getAccuracy();
+                            float vEst = location.getSpeed();
+                            float tLimit = (dist-eModel)/vEst;
+                            int sec = Math.round(tLimit);
+                            nextPosTime = System.currentTimeMillis() + sec;
                             counter++;
                             updateUI();
                             stopGPS();

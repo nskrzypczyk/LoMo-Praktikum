@@ -55,6 +55,7 @@ router.post("/export", (req, res) => {
 
         fs.writeFile("/kml/" + "Export_" + Date.now(), kmldata, 'utf8', function (err) {
           if (err) {
+              console.log(err);
             res.status(500).send({error: err.message});
           }
           res.json("Daten exportiert");
