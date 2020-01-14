@@ -18,6 +18,10 @@ const SensorData = Schema({
     type: Number,
     required: true
   },
+  text: {
+    type: String,
+    required: true
+  },
 });
 
 module.exports = mongoose.model("position", SensorData);

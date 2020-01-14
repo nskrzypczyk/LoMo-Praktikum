@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="df6ed84d-c467-459f-980b-c423e52a7423" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../Praktikum1/app/src/main/java/com/example/praktikum1/Prakt3.java" beforeDir="false" afterPath="$PROJECT_DIR$/../Praktikum1/app/src/main/java/com/example/praktikum1/Prakt3.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/Position.js" beforeDir="false" afterPath="$PROJECT_DIR$/models/Position.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/api/pos.js" beforeDir="false" afterPath="$PROJECT_DIR$/routes/api/pos.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -20,6 +22,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -49,6 +52,10 @@
       <workItem from="1578859004885" duration="474000" />
       <workItem from="1578860488762" duration="160000" />
       <workItem from="1578927578919" duration="201000" />
+      <workItem from="1578996113117" duration="687000" />
+      <workItem from="1578997368594" duration="72000" />
+      <workItem from="1579001152348" duration="849000" />
+      <workItem from="1579002430135" duration="1356000" />
     </task>
     <servers />
   </component>
@@ -60,7 +67,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>

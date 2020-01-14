@@ -36,6 +36,7 @@ public class Prakt3 extends AppCompatActivity {
     private TextView tvLat, tvLong, tvAlt, tvInterval, tvTimestamp, tvCounter;
     LocationManager locManager;
     LocationListener locListener;
+    String firstTimestamp = "";
 
     Location mCurrentLocation;
 
@@ -62,6 +63,9 @@ public class Prakt3 extends AppCompatActivity {
                 }
                 try {
                     mCurrentLocation = location;
+                    if(firstTimestamp.equals("")){
+                        firstTimestamp = Utils.getTimeStamp(mCurrentLocation);
+                    }
                     counter++;
                     updateUI();
 
@@ -116,7 +120,7 @@ public class Prakt3 extends AppCompatActivity {
         });
 
         btnExport.setOnClickListener(e -> {
-
+            this.Exportrequest();
         });
 
         btnDist.setOnClickListener(e->{
@@ -148,6 +152,7 @@ public class Prakt3 extends AppCompatActivity {
         this.tvCounter = this.findViewById(R.id.tvCounter);
         this.btnStart = this.findViewById(R.id.btnStart);
         this.btnDist = this.findViewById(R.id.btnDist);
+        this.btnExport = this.findViewById(R.id.export);
         this.slider = this.findViewById(R.id.slider);
         this.slider.setMin(1);
         this.slider.setMax(10);
@@ -185,39 +190,42 @@ public class Prakt3 extends AppCompatActivity {
     private void start(){
         btnStart.setText("STOP");
 
+        System.out.println("GPS gestartet: Interval: " + this.interval);
         locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, this.interval*1000, 0, locListener);
         isActive = true;
     }
 
     public void POSTrequest(Location position) {
-        System.out.println("URL: " + "http://" + this.getURL());
-        String URL = "http://" + this.getURL();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                MediaType JSON = MediaType.parse("application/json;charset=utf-8");
-                JSONObject actual = new JSONObject();
-                RequestBody body = null;
-                try {
-                    actual.put("timeStamp", Utils.getTimeStamp(mCurrentLocation));
-                    actual.put("lat", position.getLatitude());
-                    actual.put("long", position.getLongitude());
-                    actual.put("alt", position.getAltitude());
-                } catch (Exception e) {
-                    e.printStackTrace();
+        if(!this.getURL().equals("")) {
+            System.out.println("URL: " + "http://" + this.getURL());
+            String URL = "http://" + this.getURL();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    MediaType JSON = MediaType.parse("application/json;charset=utf-8");
+                    JSONObject actual = new JSONObject();
+                    RequestBody body = null;
+                    try {
+                        actual.put("text", firstTimestamp + "_" + counter);
+                        actual.put("timeStamp", Utils.getTimeStamp(mCurrentLocation));
+                        actual.put("lat", position.getLatitude());
+                        actual.put("long", position.getLongitude());
+                        actual.put("alt", position.getAltitude());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        body = RequestBody.create(JSON, actual.toString());
+                        Request req = new Request.Builder().url(URL + "/api/position/send").post(body).build();
+                        Response res = client.newCall(req).execute();
+                        System.out.println(res.toString());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(body);
                 }
-                try {
-                    body = RequestBody.create(JSON, actual.toString());
-                    Request req = new Request.Builder().url(URL + "/api/position/send").post(body).build();
-                    Response res = client.newCall(req).execute();
-                    System.out.println(res.toString());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                System.out.println(body);
-            }
-        }).start();
-
+            }).start();
+        }
     }
 
     public void Exportrequest() {

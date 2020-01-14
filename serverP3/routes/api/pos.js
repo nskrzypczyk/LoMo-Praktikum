@@ -10,6 +10,7 @@ router.post("/send", (req, res) => {
     long: req.body.long,
     lat: req.body.lat,
     alt: req.body.alt,
+    text: req.body.text,
   });
   newPos
     .save()
@@ -40,20 +41,23 @@ router.post("/export", (req, res) => {
       .then(arr => {
 
         let kmldata = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-        kmldata += "<kml xmlns=\"http://earth.google.com/kml/2.2\">\n";
+        kmldata += "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n";
+        kmldata += "<Document>\n";
+
 
         for(let i=0; i<arr.length; i++){
           kmldata += "<Placemark>\n";
-          kmldata += "<name>" + arr.timeStamp + "</name>\n";
-          kmldata += "<description></description>\n";
+          kmldata += "<name>" + arr[i].text + "</name>\n";
+          kmldata += "<description>" + arr[i].timeStamp + "</description>\n";
           kmldata += "<Point>\n";
-          kmldata += "<coordinates>" + arr.long + "," + arr.lat + ",0</coordinates>\n";
+          kmldata += "<coordinates>" + arr[i].long + "," + arr[i].lat + ",0</coordinates>\n";
           kmldata += "</Point>\n";
           kmldata += "</Placemark>\n";
         }
+        kmldata += "</Document>\n";
         kmldata += "</kml>\n";
 
-        fs.writeFile("/kml/" + "Export_" + Date.now(), kmldata, 'utf8', function (err) {
+        fs.writeFile("kml/" + "Export_" + Date.now() + ".kml", kmldata, 'utf8', function (err) {
           if (err) {
               console.log(err);
             res.status(500).send({error: err.message});

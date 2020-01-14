@@ -23,6 +23,15 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Button;
 
+import org.json.JSONObject;
+
+import lombok.Getter;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class Prakt3Dist extends AppCompatActivity {
 
     SeekBar slider;
@@ -35,6 +44,10 @@ public class Prakt3Dist extends AppCompatActivity {
     private TriggerEventListener triggerEventListener;
     int red = Color.RED;
     int green = Color.GREEN;
+
+    String firstTimestamp = "";
+    @Getter
+    OkHttpClient client;
 
     Location lastLoc = new Location("");
     boolean firstLoc = true;
@@ -52,6 +65,7 @@ public class Prakt3Dist extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_prakt3_dist);
+        client = new OkHttpClient(); // http client instanz
         locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE); // locationmanager instanz
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION);
@@ -235,6 +249,46 @@ public class Prakt3Dist extends AppCompatActivity {
             GPSActive = true;
             locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListener);
         }
+    }
+
+    public void POSTrequest(Location position) {
+        if(!this.getURL().equals("")) {
+            System.out.println("URL: " + "http://" + this.getURL());
+            String URL = "http://" + this.getURL();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    MediaType JSON = MediaType.parse("application/json;charset=utf-8");
+                    JSONObject actual = new JSONObject();
+                    RequestBody body = null;
+                    try {
+                        actual.put("text", firstTimestamp + "_" + counter);
+                        actual.put("timeStamp", Utils.getTimeStamp(mCurrentLocation));
+                        actual.put("lat", position.getLatitude());
+                        actual.put("long", position.getLongitude());
+                        actual.put("alt", position.getAltitude());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        body = RequestBody.create(JSON, actual.toString());
+                        Request req = new Request.Builder().url(URL + "/api/position/send").post(body).build();
+                        Response res = client.newCall(req).execute();
+                        System.out.println(res.toString());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(body);
+                }
+            }).start();
+        }
+    }
+
+    // Serveradresse aus der Settings XML holen
+    public String getURL() {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+        String val = sp.getString("server_address", "http://localhost:80");
+        return val;
     }
 
 }
