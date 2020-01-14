@@ -36,7 +36,7 @@ public class Prakt3Dist extends AppCompatActivity {
 
     SeekBar slider;
     Button btnStart;
-    private TextView tvLat, tvLong, tvAlt, tvInterval, tvTimestamp, tvCounter, tvSigMotion;
+    private TextView tvLat, tvLong, tvAlt, tvInterval, tvTimestamp, tvCounter, tvSigMotion, tvTimestampLast, tvDist;
     LocationManager locManager;
     LocationListener locListener;
     private SensorManager sensorManager;
@@ -91,9 +91,13 @@ public class Prakt3Dist extends AppCompatActivity {
                 }
 
                 try {
+                    String formattedDate = Utils.getTimeStamp(location);
+                    tvTimestampLast.setText(formattedDate);
                     if(firstLoc){
+                        POSTrequest(location);
                         lastLoc = location;
                         mCurrentLocation = location;
+                        firstTimestamp = formattedDate;
                         float eModel = location.getAccuracy();
                         float vEst = location.getSpeed();
                         float tLimit;
@@ -108,22 +112,36 @@ public class Prakt3Dist extends AppCompatActivity {
 
                         counter++;
                         updateUI();
-                        stopGPS();
+                        //stopGPS();
                         firstLoc = false;
                         sigMotion = false;
                         tvSigMotion.setTextColor(red);
                     }
                     else{
-                        if(lastLoc.distanceTo(location) >= dist && nextPosTime <= System.currentTimeMillis()){
+                        //if(lastLoc.distanceTo(location) >= dist && nextPosTime <= System.currentTimeMillis()){
+                        float distToLast = lastLoc.distanceTo(location);
+                        float distVerg = dist;
+                        tvDist.setText(distToLast + "");
+                        if(lastLoc.distanceTo(location) >= distVerg){
+                            lastLoc = location;
                             mCurrentLocation = location;
+
                             float eModel = location.getAccuracy();
                             float vEst = location.getSpeed();
-                            float tLimit = (dist-eModel)/vEst;
+                            float tLimit;
+                            try {
+                                tLimit = (dist - eModel) / vEst;
+                            }
+                            catch(Exception e){
+                                tLimit = 1;
+                            }
                             int sec = Math.round(tLimit);
                             nextPosTime = System.currentTimeMillis() + sec;
+
                             counter++;
+                            POSTrequest(location);
                             updateUI();
-                            stopGPS();
+                            //stopGPS();
                             sigMotion = false;
                             tvSigMotion.setTextColor(red);
                         }
@@ -185,14 +203,16 @@ public class Prakt3Dist extends AppCompatActivity {
         this.tvLat = this.findViewById(R.id.tvLat);
         this.tvLong = this.findViewById(R.id.tvLong);
         this.tvAlt = this.findViewById(R.id.tvAlt);
+        this.tvDist = this.findViewById(R.id.tvDist);
         this.tvInterval = this.findViewById(R.id.tvInterval);
         this.tvTimestamp = this.findViewById(R.id.tvTimestamp);
+        this.tvTimestampLast = this.findViewById(R.id.tvTimestampLast);
         this.tvCounter = this.findViewById(R.id.tvCounter);
         this.tvSigMotion = this.findViewById(R.id.tvSigMotion);
         this.btnStart = this.findViewById(R.id.btnStart);
         this.slider = this.findViewById(R.id.slider);
         this.slider.setMin(1);
-        this.slider.setMax(25);
+        this.slider.setMax(50);
 
     }
 
@@ -221,8 +241,7 @@ public class Prakt3Dist extends AppCompatActivity {
     }
 
     private void stop(){
-        GPSActive = false;
-        locManager.removeUpdates(locListener);
+        stopGPS();
         tvLong.setText("STOP");
         tvLat.setText("STOP");
         tvAlt.setText("STOP");
@@ -238,16 +257,10 @@ public class Prakt3Dist extends AppCompatActivity {
     }
 
     private void startGPS(){
-        if(firstLoc){
+        if(!GPSActive) {
             System.out.println("GPS Active");
             GPSActive = true;
-            locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListener);
-
-        }
-        else if(sigMotion && !GPSActive) {
-            System.out.println("GPS Active");
-            GPSActive = true;
-            locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locListener);
+            locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 500, 0, locListener);
         }
     }
 
