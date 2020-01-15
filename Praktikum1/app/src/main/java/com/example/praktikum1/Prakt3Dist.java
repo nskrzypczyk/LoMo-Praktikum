@@ -2,13 +2,19 @@ package com.example.praktikum1;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.hardware.TriggerEvent;
 import android.hardware.TriggerEventListener;
@@ -16,7 +22,9 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.SeekBar;
@@ -25,6 +33,9 @@ import android.widget.Button;
 
 import org.json.JSONObject;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import lombok.Getter;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -32,7 +43,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class Prakt3Dist extends AppCompatActivity {
+public class Prakt3Dist extends AppCompatActivity implements SensorEventListener{
 
     SeekBar slider;
     Button btnStart;
@@ -41,7 +52,7 @@ public class Prakt3Dist extends AppCompatActivity {
     LocationListener locListener;
     private SensorManager sensorManager;
     private Sensor sensor;
-    private TriggerEventListener triggerEventListener;
+    private SensorEventListener sensorListener;
     int red = Color.RED;
     int green = Color.GREEN;
 
@@ -59,7 +70,14 @@ public class Prakt3Dist extends AppCompatActivity {
     boolean isActive;
     int dist = 1;
     int counter = 0;
-    long nextPosTime;
+
+    float lastVelocity = 0;
+    float distanceTraveled = 0;
+    int geschwindigkeit = 2; // in m/s
+
+    long lastAccTime;
+    boolean firstAcc = true;
+    boolean secondAcc = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,20 +86,10 @@ public class Prakt3Dist extends AppCompatActivity {
         client = new OkHttpClient(); // http client instanz
         locManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE); // locationmanager instanz
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        System.out.println(sensor.getName());
+        sensorManager.registerListener(this, sensor , SensorManager.SENSOR_DELAY_NORMAL);
         this.initComponents();
-
-        triggerEventListener = new TriggerEventListener() {
-            @Override
-            public void onTrigger(TriggerEvent event) {
-                System.out.println("SigMotion detected!");
-                if(isActive) {
-                    sigMotion = true;
-                    tvSigMotion.setTextColor(green);
-                    startGPS();
-                }
-            }
-        };
 
         locListener = new android.location.LocationListener() {
             @Override // wird aufgerufen, wenn es Positionsupdates gibt
@@ -98,52 +106,59 @@ public class Prakt3Dist extends AppCompatActivity {
                         lastLoc = location;
                         mCurrentLocation = location;
                         firstTimestamp = formattedDate;
-                        float eModel = location.getAccuracy();
-                        float vEst = location.getSpeed();
-                        float tLimit;
-                        try {
-                            tLimit = (dist - eModel) / vEst;
-                        }
-                        catch(Exception e){
-                            tLimit = 1;
-                        }
-                        int sec = Math.round(tLimit);
-                        nextPosTime = System.currentTimeMillis() + sec;
+                        lastVelocity = location.getSpeed();
 
                         counter++;
                         updateUI();
-                        //stopGPS();
+                        stopGPS();
                         firstLoc = false;
                         sigMotion = false;
                         tvSigMotion.setTextColor(red);
+
+
+                        tvDist.setText("GPS auto. ausgeschaltet");
+                        int secs = (dist/geschwindigkeit)-1;
+
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                startGPS();
+                            }
+                        }, secs*1000);
+
+
                     }
                     else{
-                        //if(lastLoc.distanceTo(location) >= dist && nextPosTime <= System.currentTimeMillis()){
                         float distToLast = lastLoc.distanceTo(location);
                         float distVerg = dist;
                         tvDist.setText(distToLast + "");
                         if(lastLoc.distanceTo(location) >= distVerg){
                             lastLoc = location;
                             mCurrentLocation = location;
-
-                            float eModel = location.getAccuracy();
-                            float vEst = location.getSpeed();
-                            float tLimit;
-                            try {
-                                tLimit = (dist - eModel) / vEst;
-                            }
-                            catch(Exception e){
-                                tLimit = 1;
-                            }
-                            int sec = Math.round(tLimit);
-                            nextPosTime = System.currentTimeMillis() + sec;
+                            lastVelocity = location.getSpeed();
 
                             counter++;
                             POSTrequest(location);
                             updateUI();
-                            //stopGPS();
+                            stopGPS();
                             sigMotion = false;
                             tvSigMotion.setTextColor(red);
+
+
+
+                            tvDist.setText("GPS auto. ausgeschaltet");
+                            int secs = (dist/geschwindigkeit)-1;
+
+                            final Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    startGPS();
+                                }
+                            }, secs*1000);
+
+
                         }
                     }
 
@@ -171,6 +186,7 @@ public class Prakt3Dist extends AppCompatActivity {
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(intent);
             }
+
         };
 
         btnStart.setOnClickListener(e -> {
@@ -196,7 +212,71 @@ public class Prakt3Dist extends AppCompatActivity {
             }
         });
 
-        sensorManager.requestTriggerSensor(triggerEventListener, sensor);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+
+        Sensor mySensor = sensorEvent.sensor;
+        /*
+        System.out.println("Listener: " + sensor.getName());
+        if (mySensor.getType() == Sensor.TYPE_STEP_COUNTER) {
+            distanceTraveled += 0.7f;
+            System.out.println(distanceTraveled);
+            tvDist.setText(distanceTraveled + "");
+            float distVerg = dist;
+            if(distanceTraveled >= distVerg){
+                distanceTraveled = 0;
+            }
+        }
+         */
+
+
+        if (mySensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+            float x = sensorEvent.values[0];
+            float y = sensorEvent.values[1];
+            float z = sensorEvent.values[2];
+
+            if(x >= 5.0 || x <= -5.0 || y >= 5.0 || y <= -5.0 || z >= 5.0 || z <= -5.0  ){
+                this.sigMotion = true;
+                tvSigMotion.setTextColor(green);
+            }
+
+            /*
+            if(firstAcc){
+                firstAcc = false;
+                lastAccTime = System.currentTimeMillis();        }
+            else{
+                if(secondAcc){
+                    secondAcc = false;
+                    float time = (System.currentTimeMillis() - lastAccTime)/1000f;
+                    lastAccTime = System.currentTimeMillis();
+                    lastVelocity += y*time;
+                }
+                else{
+                    float time = (System.currentTimeMillis() - lastAccTime)/1000f;
+                    lastAccTime = System.currentTimeMillis();
+                    if(lastVelocity > 0.1f || lastVelocity < -0.1f){
+                        lastVelocity = 0;
+                    }
+                    distanceTraveled += lastVelocity*time;
+                    float newVel = y*time;
+                    if(newVel < 0.0f){
+                        newVel = newVel * 0.7f;
+                    }
+                    lastVelocity += newVel;
+                    tvDist.setText(distanceTraveled + "");
+                }
+            }
+
+             */
+
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 
     private void initComponents() {
@@ -302,6 +382,16 @@ public class Prakt3Dist extends AppCompatActivity {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         String val = sp.getString("server_address", "http://localhost:80");
         return val;
+    }
+
+    protected void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this);
+    }
+
+    protected void onResume() {
+        super.onResume();
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
 }

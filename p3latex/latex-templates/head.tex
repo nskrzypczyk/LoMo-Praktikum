@@ -1,0 +1,61 @@
+\documentclass[10pt,a4paper,ngerman]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc} % Zeichensatz
+\usepackage[ngerman]{babel} % Sprachpaket
+\usepackage{amsmath}  % Mathematik
+\usepackage{amsfonts} % Mathematik
+\usepackage{amssymb}  % Mathematik
+\usepackage{palatino} % Schriftart
+\usepackage{titling}  % für eigene Überschrift
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{wasysym}  % enthält Symbole, wie Quadrate (für Multiple Choice Fragen)
+\usepackage{dirtree}  % Verzeichnisbäume
+\usepackage{hyperref} % Hyperlinks und andere Verlinkungen
+
+% Package für die Kopf- und Fußzeilen
+\usepackage{scrlayer-scrpage}
+\pagestyle{scrheadings}
+\clearpairofpagestyles % Die einzelnen Bereiche leeren
+
+% Quelltext-Listings 
+\usepackage{listings} % Listings
+\usepackage{color}    % Syntax-Highlighting
+
+% Farben definieren (für Syntax-Highlighting)
+\definecolor{middlegray}{rgb}{0.5,0.5,0.5}
+\definecolor{lightgray}{rgb}{0.8,0.8,0.8}
+\definecolor{darkgray}{gray}{0.2} % gray: nur ein Wert wird angegeben, welcher dem Grauton entspricht
+\definecolor{comment}{rgb}{0.0,0.5,0.0}
+\definecolor{keywordcolor}{rgb}{0.0, 0.28, 0.67}
+
+\newcommand{\lstfs}{\fontsize{10}{12}}
+
+% Listings formatieren
+\lstset{
+   	basicstyle=\ttfamily\lstfs,
+   	keywordstyle=\bfseries\ttfamily\color{keywordcolor},
+   	stringstyle=\color{darkgray}\ttfamily,
+   	commentstyle=\color{comment}\ttfamily,
+  	emph={square}, 
+   	emphstyle=\ttfamily,
+   	emph={[2]root,base},
+   	emphstyle={[2]\ttfamily},
+   	showstringspaces=false,
+   	flexiblecolumns=false,
+   	tabsize=2,
+   	numbers=left,
+   	numberstyle=\tiny,
+   	numberblanklines=false,
+   	stepnumber=5,
+   	firstnumber=1,
+ 	numberfirstline=true,
+   	numbersep=10pt,
+	xleftmargin=15pt,
+	literate={ö}{{\"o}}1
+           {ä}{{\"a}}1
+           {ü}{{\"u}}1
+           {ß}{{\ss}}1
+}
+

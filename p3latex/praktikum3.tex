@@ -1,0 +1,58 @@
+\input{latex-templates/head.tex}
+
+% Metainformationen
+\title{Evaluation -- Praktikum 3}
+\author{Die Lokalisatoren}
+
+\ihead{}
+\chead{}
+\ohead{}
+\ifoot{}
+\cfoot{\pagemark}
+\ofoot{}
+
+\input{latex-templates/ownCommands.tex}
+
+\setlength{\parskip}{0em}
+\setlength{\parindent}{0em}
+\renewcommand{\baselinestretch}{1.5}
+
+\begin{document}
+
+\begin{figure}[t]
+	\flushright
+	\includegraphics[width=5cm]{hs-bo-logo}
+\end{figure}
+
+\docheader
+
+\section{Technische Umsetzung}
+Die Applikation baut auf der in den ersten beiden Praktika entwickelten App auf. Dadurch war schon eine Grundstruktur, mit z.B. Einstellungen für die Serververbindung und der Berechtigungsabfrage gegeben.
+Es wurden zwei zusätzliche Aktivitäten hinzugefügt, eine zur GPS-Messung mit einer periodischen Reportingstrategie und eine mit Distanz-basierter Reportingstrategie.
+Die periodische-Reportigstrategie fragt GPS Updates mit dem zuvor eingestellten Zeitintervall an. Im optimalen Fall ruft die Betriebssystem API nun in genau diesem Intervall die Callbackfunktion auf. In dieser Funktion wird das Location Objekt zwischen gespeichert und die POST-Anfrage an den Server gestellt. Die Aktivität der periodischen Reportingstrategie bietet zudem einen Button, mit dem eine POST Anfrage an den API-Endpunkt gesendet wird, durch den der Export der in der Datenbank gesammelten Daten in eine KML-Datei angestoßen wird.
+Die Aktivität der  Distanz-basierten Reportingstrategie baut auf der Aktivität der periodischen Reportingstrategie auf. Hier wurde die Anfrage der GPS Updates geändert, so dass das Zeitintervall auf Null Sekunden gestellt wurde. Durch diese Änderung wird die Callbackfunktion aufgerufen, sobald ein neues Positionsupdate vorliegt. In dieser Callbackfunktion werden die Positionsupdates mit der zuletzt gemessenen Position verglichen. In dem Fall, dass der Abstand der beiden Positionen größer ist als die zuvor festgelegte Distanz, wird die neue Position zwischengespeichert und an den Server gesendet.
+
+Der Server wurde mit Node.js umgesetzt, die empfangenen Daten werden in einer MongoDB abgespeichert. Der Server bietet die Funktionen Daten über eine API zusenden und über eine POST anfrage an einen API Endpunkt den Exportprozess der Daten in eine KML-Datei zu starten.
+
+\section{Aufbau und Ablauf der Messung}
+Die Messung fanden in der Umgebung der Siedlung Am Stenshof in Bochum statt. Die Messroute wurde zu Fuß abgegangen und beträgt ungefähr 950 Meter. Mit einer 30 Sekunden langen und einer 60 Sekunden langen Pause beträgt die Dauer einer Messung ungefähr zehn bis zwölf Minuten.
+
+Es wurden Messungen mit vier verschiedenen Reportingstrategien durch geführt:
+\begin{itemize}
+	\item{Periodische Reportingstrategie mit einem Zeitintervall von einer Sekunde}
+	\item{Distanz-basierte Reportingstrategie mit einem Abstand von 50 Metern}
+	\item{Geschwindigkeis und Distanz-basierte Reportingstrategie mit einem Abstand von 50 Metern und einer maximalen Geschwindigkeit von 2 m/s}
+	\item{Bewegungsb-bewusste Distanz-basierte Reportingstrategie mit einem Abstand von 50 Metern}
+\end{itemize}
+
+\section{Erwartungen}
+\subsection{Periodische Reportingstrategie}
+Bei der Periodischen Reportingstrategie ist zu erwarten, dass 
+
+\section{Auswertung}	
+
+
+\subsection{Zusammenfassung}
+
+	
+\end{document}
