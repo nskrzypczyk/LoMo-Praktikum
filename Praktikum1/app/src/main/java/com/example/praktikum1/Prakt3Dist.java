@@ -116,6 +116,7 @@ public class Prakt3Dist extends AppCompatActivity implements SensorEventListener
                         tvSigMotion.setTextColor(red);
 
 
+                        /*
                         tvDist.setText("GPS auto. ausgeschaltet");
                         int secs = (dist/geschwindigkeit)-1;
 
@@ -127,9 +128,11 @@ public class Prakt3Dist extends AppCompatActivity implements SensorEventListener
                             }
                         }, secs*1000);
 
+                         */
+
 
                     }
-                    else{
+                    else if(sigMotion){
                         float distToLast = lastLoc.distanceTo(location);
                         float distVerg = dist;
                         tvDist.setText(distToLast + "");
@@ -147,6 +150,7 @@ public class Prakt3Dist extends AppCompatActivity implements SensorEventListener
 
 
 
+                            /*
                             tvDist.setText("GPS auto. ausgeschaltet");
                             int secs = (dist/geschwindigkeit)-1;
 
@@ -157,6 +161,8 @@ public class Prakt3Dist extends AppCompatActivity implements SensorEventListener
                                     startGPS();
                                 }
                             }, secs*1000);
+
+                             */
 
 
                         }
@@ -240,6 +246,7 @@ public class Prakt3Dist extends AppCompatActivity implements SensorEventListener
             if(x >= 5.0 || x <= -5.0 || y >= 5.0 || y <= -5.0 || z >= 5.0 || z <= -5.0  ){
                 this.sigMotion = true;
                 tvSigMotion.setTextColor(green);
+                startGPS();
             }
 
             /*
