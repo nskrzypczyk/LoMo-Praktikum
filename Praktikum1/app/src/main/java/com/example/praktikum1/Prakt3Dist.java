@@ -98,6 +98,7 @@ public class Prakt3Dist extends AppCompatActivity implements SensorEventListener
                     System.out.println("Keine Daten");
                 }
 
+                counter++;
                 try {
                     String formattedDate = Utils.getTimeStamp(location);
                     tvTimestampLast.setText(formattedDate);
@@ -108,12 +109,12 @@ public class Prakt3Dist extends AppCompatActivity implements SensorEventListener
                         firstTimestamp = formattedDate;
                         lastVelocity = location.getSpeed();
 
-                        counter++;
                         updateUI();
                         stopGPS();
                         firstLoc = false;
                         sigMotion = false;
                         tvSigMotion.setTextColor(red);
+
 
 
                         /*
@@ -128,29 +129,31 @@ public class Prakt3Dist extends AppCompatActivity implements SensorEventListener
                             }
                         }, secs*1000);
 
+
                          */
 
 
+
                     }
+                    //else if(true){
                     else if(sigMotion){
                         float distToLast = lastLoc.distanceTo(location);
                         float distVerg = dist;
                         tvDist.setText(distToLast + "");
+                        sigMotion = false;
+                        tvSigMotion.setTextColor(red);
                         if(lastLoc.distanceTo(location) >= distVerg){
                             lastLoc = location;
                             mCurrentLocation = location;
                             lastVelocity = location.getSpeed();
 
-                            counter++;
                             POSTrequest(location);
                             updateUI();
-                            stopGPS();
-                            sigMotion = false;
-                            tvSigMotion.setTextColor(red);
 
 
 
-                            /*
+
+/*
                             tvDist.setText("GPS auto. ausgeschaltet");
                             int secs = (dist/geschwindigkeit)-1;
 
@@ -162,10 +165,13 @@ public class Prakt3Dist extends AppCompatActivity implements SensorEventListener
                                 }
                             }, secs*1000);
 
-                             */
+
+ */
+
 
 
                         }
+                        stopGPS();
                     }
 
                 } catch (Exception e) {
